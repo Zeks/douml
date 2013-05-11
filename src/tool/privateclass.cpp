@@ -34,7 +34,8 @@ BrowserClass* GetParent(QList<BrowserNode*> nodes)
 
 void CreateLinkToPublic(BrowserClass* originClass, BrowserClass* privateClass)
 {
-    BrowserOperation* privateConstructor = BrowserClass::addOperation();
+
+    BrowserOperation* privateConstructor = CreateDefaultConstructor(privateClass);
     privateConstructor->set_name(privateClass->get_name());
 
     OperationData* privateConstructorData = static_cast<OperationData*>(privateConstructor->get_data());
@@ -45,7 +46,7 @@ void CreateLinkToPublic(BrowserClass* originClass, BrowserClass* privateClass)
     privateConstructorData->set_param_dir(0, UmlInOut);
     int nKeys = privateClass->get_n_keys();
     privateClass->resize_n_keys(nKeys+1, true);
-    privateClass->set_value(nKeys, ": q_ptr(_q_ptr)");
+    privateClass->set_value(nKeys, ": q_ptr(_q_ptr), qc_ptr(const_cast<const " + originClass->get_name() + ">)(_q_ptr)");
     privateClass->set_key(nKeys, "constructor-initializer");
 
     // need to create a pointer to parent in private class
@@ -62,23 +63,59 @@ void CreateLinkToPublic(BrowserClass* originClass, BrowserClass* privateClass)
 
     privateClass->modified();
 }
+
+QList<BrowserNode*> GetConstructors(BrowserClass* originClass)
+{
+    QList<BrowserNode*> result;
+    Q3ListViewItem* item;
+    for(item = originClass->firstChild(); item!=0; item->nextSibling())
+    {
+        BrowserNode* asNode = static_cast<BrowserNode*>(item);
+        if(asNode->get_name() == originClass->get_name())
+            result << asNode;
+    }
+    return result;
+}
+
+void InsertPrivateLinkIntoConstructorDefinition(BrowserNode* constructor, BrowserNode* privateClass)
+{
+    BrowserOperation* asOperation = static_cast<BrowserOperation*>(constructor);
+    OperationData* constructorData = static_cast<OperationData*>(asOperation->get_data());
+    // need to check if constructor already have initializer
+    bool hasInitializer = QString(constructorData->get_cppdef()).contains(":");
+    QString newConstructorInit;
+    if(!hasInitializer)
+    {
+        int nKeys = privateClass->get_n_keys();
+        asOperation->resize_n_keys(nKeys+1, true);
+        asOperation->set_key(nKeys, "constructor-initializer");
+        newConstructorInit = ": d_ptr(new "+ privateClass->get_name() + "())";
+    }
+    else
+        newConstructorInit = asOperation->get_value("constructor-initializer") + ", d_ptr(new "+ privateClass->get_name() + "())";
+    asOperation->set_value(nKeys, newConstructorInit);
+    asOperation->modified();
+
+}
+
+BrowserOperation* CreateDefaultConstructor(BrowserClass* originClass)
+{
+    BrowserOperation* constructor = originClass->addOperation();
+    constructor->set_name(originClass->get_name());
+    return constructor;
+}
+
 void CreateLinkToPrivate(BrowserClass* originClass, BrowserClass* privateClass)
 {
-    BrowserOperation* privateConstructor = BrowserClass::addOperation();
-    privateConstructor->set_name(privateClass->get_name());
 
-    OperationData* privateConstructorData = static_cast<OperationData*>(privateConstructor->get_data());
-    int originalParamCount = privateConstructorData->nparams;
-    privateConstructorData->set_n_params(originalParamCount + 1);
-    privateConstructorData->set_param_name(0, "_q_ptr");
-    privateConstructorData->set_param_type(0, AType(originClass));
-    privateConstructorData->set_param_dir(0, UmlInOut);
-    int nKeys = privateClass->get_n_keys();
-    privateClass->resize_n_keys(nKeys+1, true);
-    privateClass->set_value(nKeys, ": q_ptr(_q_ptr)");
-    privateClass->set_key(nKeys, "constructor-initializer");
-    privateClass->modified();
-
+    QList<BrowserNode*> constructors = GetConstructors(originClass);
+    // if there is no constructor - create one
+    if(constructors.count() == 0)
+        constructors.push_back(CreateDefaultConstructor(originClass));
+    for(auto node : constructors)
+    {
+        InsertPrivateLinkIntoConstructorDefinition(node, privateClass);
+    }
 
     BrowserAttribute* dPointer = originClass->addAttribute();
     AttributeData* dData = static_cast<AttributeData*>(dPointer->get_data());
