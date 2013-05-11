@@ -13,7 +13,7 @@
 #include "browser/BrowserClassView.h"
 #include <QMessageBox>
 
-bool VerifySingleParent(QList<BrowserNode*>)
+bool VerifySingleParent(QList<BrowserNode*> nodes)
 {
     BrowserNode* parent = nullptr;
     for(auto node : nodes)
@@ -34,12 +34,11 @@ BrowserClass* GetParent(QList<BrowserNode*> nodes)
 
 void CreateLinkToPublic(BrowserClass* originClass, BrowserClass* privateClass)
 {
-
-    BrowserOperation* privateConstructor = CreateDefaultConstructor(privateClass);
+    BrowserNode* privateConstructor = CreateDefaultConstructor(privateClass);
     privateConstructor->set_name(privateClass->get_name());
 
     OperationData* privateConstructorData = static_cast<OperationData*>(privateConstructor->get_data());
-    int originalParamCount = privateConstructorData->nparams;
+    int originalParamCount = privateConstructorData->get_n_params();
     privateConstructorData->set_n_params(originalParamCount + 1);
     privateConstructorData->set_param_name(0, "_q_ptr");
     privateConstructorData->set_param_type(0, AType(originClass));
@@ -50,12 +49,12 @@ void CreateLinkToPublic(BrowserClass* originClass, BrowserClass* privateClass)
     privateClass->set_key(nKeys, "constructor-initializer");
 
     // need to create a pointer to parent in private class
-    BrowserAttribute* qPointer = privateClass->addAttribute();
+    BrowserNode* qPointer = privateClass->addAttribute();
     AttributeData* qData = static_cast<AttributeData*>(qPointer->get_data());
     qData->set_type(originClass->get_name());
     qPointer->set_name("q_ptr");
 
-    BrowserAttribute* qConstPointer = privateClass->addAttribute();
+    BrowserNode* qConstPointer = privateClass->addAttribute();
     AttributeData* qcData = static_cast<AttributeData*>(qConstPointer->get_data());
     qcData->set_isa_const_attribute(true);
     qcData->set_type(originClass->get_name());
@@ -84,23 +83,24 @@ void InsertPrivateLinkIntoConstructorDefinition(BrowserNode* constructor, Browse
     // need to check if constructor already have initializer
     bool hasInitializer = QString(constructorData->get_cppdef()).contains(":");
     QString newConstructorInit;
+    int nKeys = privateClass->get_n_keys();
     if(!hasInitializer)
     {
-        int nKeys = privateClass->get_n_keys();
+
         asOperation->resize_n_keys(nKeys+1, true);
         asOperation->set_key(nKeys, "constructor-initializer");
         newConstructorInit = ": d_ptr(new "+ privateClass->get_name() + "())";
     }
     else
-        newConstructorInit = asOperation->get_value("constructor-initializer") + ", d_ptr(new "+ privateClass->get_name() + "())";
+        newConstructorInit = QString(asOperation->get_value("constructor-initializer")) + ", d_ptr(new " + privateClass->get_name() + "())";
     asOperation->set_value(nKeys, newConstructorInit);
     asOperation->modified();
 
 }
 
-BrowserOperation* CreateDefaultConstructor(BrowserClass* originClass)
+BrowserNode* CreateDefaultConstructor(BrowserClass* originClass)
 {
-    BrowserOperation* constructor = originClass->addOperation();
+    BrowserNode* constructor = originClass->addOperation();
     constructor->set_name(originClass->get_name());
     return constructor;
 }
@@ -117,12 +117,12 @@ void CreateLinkToPrivate(BrowserClass* originClass, BrowserClass* privateClass)
         InsertPrivateLinkIntoConstructorDefinition(node, privateClass);
     }
 
-    BrowserAttribute* dPointer = originClass->addAttribute();
+    BrowserNode* dPointer = originClass->addAttribute();
     AttributeData* dData = static_cast<AttributeData*>(dPointer->get_data());
     dData->set_type(originClass->get_name());
     dPointer->set_name("d_ptr");
 
-    BrowserAttribute* dConstPointer = originClass->addAttribute();
+    BrowserNode* dConstPointer = originClass->addAttribute();
     AttributeData* dcData = static_cast<AttributeData*>(dConstPointer->get_data());
     dcData->set_isa_const_attribute(true);
     dcData->set_type(originClass->get_name());
@@ -131,7 +131,7 @@ void CreateLinkToPrivate(BrowserClass* originClass, BrowserClass* privateClass)
 
 BrowserClass* CreatePrivateClass(BrowserClass* originClass)
 {
-    BrowserNode* parent = originClass->parent();
+    BrowserNode* parent = static_cast<BrowserNode*>(originClass->parent());
     BrowserClassView* asView = static_cast<BrowserClassView*>(parent);
     if(!asView)
         return nullptr;
@@ -153,7 +153,7 @@ BrowserArtifact* CreatePrivateClassArtifact(BrowserClass* cl)
     BrowserDeploymentView* deploymentView = nullptr;
 
     if(cl->get_associated_artifact() != nullptr)
-        deploymentView = cl->get_associated_artifact()->parent();
+        deploymentView = static_cast<BrowserDeploymentView*>(cl->get_associated_artifact()->parent());
 
     BrowserArtifact* artifact = CreateDeploymentArtifact(cl, deploymentView);
     if(!artifact)
@@ -176,7 +176,7 @@ BrowserArtifact* CreatePrivateClassArtifact(BrowserClass* cl)
 BrowserArtifact* CreateDeploymentArtifact(BrowserClass* cl, BrowserDeploymentView* deploymentView)
 {
     if(!deploymentView)
-        deploymentView = CreateDeploymentView(cl);
+        deploymentView = static_cast<BrowserDeploymentView*>(CreateDeploymentView(cl));
     BrowserArtifact * dn = nullptr;
     if(deploymentView)
         dn = BrowserArtifact::add_artifact(deploymentView);
@@ -187,10 +187,10 @@ BrowserNode* CreateDeploymentView(BrowserClass* cl)
 {
     BrowserNode* packageNode = cl;
     while(packageNode->get_type() != UmlPackage && packageNode->parent())
-        packageNode = packageNode->parent();
+        packageNode = static_cast<BrowserNode*>(packageNode->parent());
 
     BrowserDeploymentView * deploymentView = nullptr;
-    if(package)
+    if(packageNode)
     {
         deploymentView = BrowserDeploymentView::add_deployment_view(packageNode);
         deploymentView->set_name("classes");
@@ -205,38 +205,28 @@ bool RequestNewPrivateClass()
     return false;
 }
 
-// need to have creation of private in origin and initialization of origin in private
-void UpdateConstructors(BrowserClass* originClass, BrowserClass* privateClass)
-{
-
-}
-
-bool FindPrivate(BrowserClass* originClass, BrowserClass*& cl, bool askForNewClass)
+bool FindPrivate(BrowserClass* originClass, BrowserClass*& privateClass, bool askForNewClass)
 {
     //IdDict<BrowserClass> classes;
-    cl = nullptr;
+    privateClass = nullptr;
     QString className = originClass->get_name();
     QString privateName = className + "Private";
-    IdIterator<BrowserClass> it(all);
-    while(it.current()) != 0)
+    IdIterator<BrowserClass> it(BrowserClass::all);
+    while(it.current() != 0)
     {
         if(privateName == it.current()->get_name())
             break;
-        it++;
+        ++it;
     }
     if(it.current() != 0)
-        cl = static_cast<BrowserClass*>(it.current());
-    if(cl == nullptr && askForNewClass && RequestNewPrivateClass())
+        privateClass = static_cast<BrowserClass*>(it.current());
+    if(privateClass == nullptr && askForNewClass && RequestNewPrivateClass())
         CreatePrivateClass(originClass);
-    if(cl == nullptr)
+    if(privateClass == nullptr)
         return false;
     return true;
 }
 
-void SplitPrivate(BrowserClass* cl)
-{}
-void UnsplitPrivate(BrowserClass* cl)
-{}
 void MoveToPrivate(QList<BrowserNode*> nodes)
 {
     if(!VerifySingleParent(nodes))
@@ -248,7 +238,7 @@ void MoveToPrivate(QList<BrowserNode*> nodes)
     if(!parent)
         return;
 
-    BrowserClass* privateClass = nulltpr;
+    BrowserClass* privateClass = nullptr;
     if(!FindPrivate(parent, privateClass, true))
         return;
 
@@ -258,5 +248,52 @@ void MoveToPrivate(QList<BrowserNode*> nodes)
         privateClass->insertItem(node);
     }
 }
-void MoveToPublic(BrowserNode* cl)
-{}
+
+
+bool FindPublic(BrowserClass* originClass, BrowserClass*& publicClass)
+{
+    publicClass = nullptr;
+    QString className = originClass->get_name();
+    if(!className.contains("Private"))
+    {
+        QMessageBox::warning(0, QObject::tr("Warning!"), QObject::tr("This is not a private class!"));
+        return false;
+    }
+    QString publicName = className.remove("Private");
+    IdIterator<BrowserClass> it(BrowserClass::all);
+    while(it.current() != 0)
+    {
+        if(publicName == it.current()->get_name())
+            break;
+        ++it;
+    }
+    if(it.current() != 0)
+        publicClass = static_cast<BrowserClass*>(it.current());
+    if(publicClass == nullptr)
+        return false;
+    return true;
+}
+
+void MoveToPublic(QList<BrowserNode*> nodes)
+{
+    if(!VerifySingleParent(nodes))
+    {
+        QMessageBox::warning(0, QObject::tr("Warning!"), QObject::tr("You can only move nodes if they have the same parent"));
+        return;
+    }
+    BrowserClass* parent = GetParent(nodes);
+    if(!parent)
+        return;
+
+    BrowserClass* publicClass = nullptr;
+    if(!FindPublic(parent, publicClass))
+    {
+        QMessageBox::warning(0, QObject::tr("Warning!"), QObject::tr("No public class found"));
+        return;
+    }
+    for(auto node : nodes)
+    {
+        parent->takeItem(node);
+        publicClass->insertItem(node);
+    }
+}

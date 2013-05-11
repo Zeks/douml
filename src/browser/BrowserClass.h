@@ -58,7 +58,7 @@ class BrowserClass : public BrowserNode, public Labeled<BrowserClass>
 
 protected:
     BrowserClass(int id);
-    static IdDict<BrowserClass> all;
+
 
     static QStringList its_default_stereotypes;
     static QStringList relations_default_stereotypes[UmlRelations];
@@ -73,6 +73,7 @@ protected:
     void exec_menu_choice(int index, Q3PtrList<BrowserOperation> & l);
 
 public:
+    static IdDict<BrowserClass> all;
     BrowserClass(QString s, BrowserNode * p, ClassData * d, int id = 0);
     BrowserClass(const BrowserClass * model, BrowserNode * p);
     virtual ~BrowserClass();

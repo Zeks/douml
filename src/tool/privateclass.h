@@ -13,20 +13,18 @@ BrowserClass* GetParent(QList<BrowserNode*> nodes);
 void CreateLinkToPublic(BrowserClass* originClass, BrowserClass* privateClass);
 QList<BrowserNode*> GetConstructors(BrowserClass* originClass);
 void InsertPrivateLinkIntoConstructorDefinition(BrowserNode* constructor, BrowserNode* privateClass);
-BrowserOperation* CreateDefaultConstructor(BrowserClass* originClass);
+BrowserNode* CreateDefaultConstructor(BrowserClass* originClass);
 void CreateLinkToPrivate(BrowserClass* originClass, BrowserClass* privateClass);
 BrowserClass* CreatePrivateClass(BrowserClass* originClass);
 BrowserArtifact* CreatePrivateClassArtifact(BrowserClass* cl);
 BrowserArtifact* CreateDeploymentArtifact(BrowserClass* cl, BrowserDeploymentView* deploymentView);
 BrowserNode* CreateDeploymentView(BrowserClass* cl);
 bool RequestNewPrivateClass();
-// need to have creation of private in origin and initialization of origin in private
 void UpdateConstructors(BrowserClass* originClass, BrowserClass* privateClass);
-bool FindPrivate(BrowserClass* originClass, BrowserClass*& cl, bool askForNewClass);
-void SplitPrivate(BrowserClass* cl);
-void UnsplitPrivate(BrowserClass* cl);
+bool FindPrivate(BrowserClass* originClass, BrowserClass*& privateClass, bool askForNewClass);
+bool FindPublic(BrowserClass* originClass, BrowserClass*& publicClass);
 void MoveToPrivate(QList<BrowserNode*> nodes);
-void MoveToPublic(BrowserNode* cl);
+void MoveToPublic(QList<BrowserNode *> nodes);
 
 
 #endif // PRIVATECLASS_H
