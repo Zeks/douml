@@ -967,7 +967,8 @@ void BrowserClass::exec_menu_choice(int rank,
         if (isstereotypemetaclass)
             return;
 
-        if (associated_artifact == 0) {
+        if (associated_artifact == 0)
+        {
             BrowserArtifact * ba =
                     new BrowserArtifact(name,
                                         ((BrowserClassView *) parent())->get_associated());

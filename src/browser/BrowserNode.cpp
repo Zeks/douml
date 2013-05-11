@@ -142,6 +142,36 @@ BrowserNode::~BrowserNode()
         marked_list.removeRef(this);
 }
 
+void BrowserNode::MoveNodes(Q3PtrList<BrowserNode> nodeList, BrowserNode *destination, BrowserNode *actionSource)
+{
+    for (BrowserNode* bn = nodeList.last(); bn != 0; bn = nodeList.prev())
+    {
+        BrowserNode* nodeSource = nullptr;
+        if(actionSource != destination)
+            nodeSource = actionSource;
+        if(destination != (BrowserNode *) bn->parent())
+        {
+            if (bn->get_type() == UmlAttribute )
+            {
+                BrowserAttribute* asAttribute =  dynamic_cast<BrowserAttribute*>(bn);
+                if(((BrowserNode *) asAttribute->get_get_oper()))
+                    destination->move(((BrowserNode *) asAttribute->get_get_oper()), nodeSource);
+                if(((BrowserNode *) asAttribute->get_set_oper()))
+                    destination->move(((BrowserNode *) asAttribute->get_set_oper()), nodeSource);
+            }
+            else if (bn->get_type() >= UmlAggregation &&  bn->get_type() <= UmlDirectionalAggregationByValue)
+            {
+                BrowserRelation* asRelation =  dynamic_cast<BrowserRelation*>(bn);
+                if(((BrowserNode *) asRelation->get_get_oper()))
+                    destination->move(((BrowserNode *) asRelation->get_get_oper()), nodeSource);
+                if(((BrowserNode *) asRelation->get_set_oper()))
+                    destination->move(((BrowserNode *) asRelation->get_set_oper()), nodeSource);
+            }
+        }
+        destination->move(bn, nodeSource);
+    }
+}
+
 bool BrowserNode::is_undefined() const
 {
     return (parent() == UndefinedNodePackage);
@@ -1056,71 +1086,11 @@ void BrowserNode::mark_management(int choice)
         return;
 
     case 3:	// move into
-        for (bn = marked_list.last();
-             bn != 0;
-             bn = marked_list.prev())
-        {
-            if (bn->get_type() == UmlAttribute )
-            {
-                BrowserAttribute* asAttribute =  dynamic_cast<BrowserAttribute*>(bn);
-                if(((BrowserNode *) asAttribute->get_get_oper()))
-                    move(((BrowserNode *) asAttribute->get_get_oper()), 0);
-                if(((BrowserNode *) asAttribute->get_set_oper()))
-                    move(((BrowserNode *) asAttribute->get_set_oper()), 0);
-            }
-            else if (bn->get_type() >= UmlAggregation &&  bn->get_type() <= UmlDirectionalAggregationByValue)
-            {
-                BrowserRelation* asRelation =  dynamic_cast<BrowserRelation*>(bn);
-                if(((BrowserNode *) asRelation->get_get_oper()))
-                    move(((BrowserNode *) asRelation->get_get_oper()), 0);
-                if(((BrowserNode *) asRelation->get_set_oper()))
-                    move(((BrowserNode *) asRelation->get_set_oper()), 0);
-            }
-            //QLOG_INFO() << stringify(bn->get_type());
-            move(bn, 0);
-        }
-
+        MoveNodes(marked_list, this, this);
         break;
 
-    case 4: {	// move after
-        BrowserNode * p = (BrowserNode *) parent();
-
-        for (bn = marked_list.last();
-             bn != 0;
-             bn = marked_list.prev())
-        {
-            //BrowserView::removeItem(p->get_)
-//            BrowserAttribute* asAttribute = ((BrowserAttribute *) bn);
-//            if(p != (BrowserNode *) bn->parent() && asAttribute != 0)
-//            {
-//                p->move(((BrowserNode *) asAttribute->get_get_oper()), this);
-//                p->move(((BrowserNode *) asAttribute->get_set_oper()), this);
-//            }
-
-            if(p != (BrowserNode *) bn->parent())
-            {
-                if (bn->get_type() == UmlAttribute )
-                {
-                    BrowserAttribute* asAttribute =  dynamic_cast<BrowserAttribute*>(bn);
-                    if(((BrowserNode *) asAttribute->get_get_oper()))
-                        p->move(((BrowserNode *) asAttribute->get_get_oper()), this);
-                    if(((BrowserNode *) asAttribute->get_set_oper()))
-                        p->move(((BrowserNode *) asAttribute->get_set_oper()), this);
-                }
-                else if (bn->get_type() >= UmlAggregation &&  bn->get_type() <= UmlDirectionalAggregationByValue)
-                {
-                    BrowserRelation* asRelation =  dynamic_cast<BrowserRelation*>(bn);
-                    if(((BrowserNode *) asRelation->get_get_oper()))
-                        p->move(((BrowserNode *) asRelation->get_get_oper()), this);
-                    if(((BrowserNode *) asRelation->get_set_oper()))
-                        p->move(((BrowserNode *) asRelation->get_set_oper()), this);
-                }
-            }
-
-            p->move(bn, this);
-
-        }
-    }
+    case 4:// move after
+        MoveNodes(marked_list, (BrowserNode *) parent(), this);
     break;
 
     case 5:	// duplicate into

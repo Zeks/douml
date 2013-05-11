@@ -71,7 +71,8 @@ int place(IdDict<void> & d, int id, void * x)
         // id is relevant
         bool check = TRUE;
 
-        if (id == 0) {
+        if (id == 0)
+        {
             // compute a new id
             if ((d.idmax < FIRST_ID) && (uid != 0))
                 d.idmax = FIRST_ID - 128;

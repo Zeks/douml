@@ -238,7 +238,8 @@ HEADERS        = \
     CustomWidgets/quickedit.h \
     browser/BrowserOperationAttribute.h \
     CustomWidgets/GenericDelegate.h \
-    browserfunctions/operationfuncs.h
+    browserfunctions/operationfuncs.h \
+    tool/privateclass.h
 
 
 SOURCES = \
@@ -525,7 +526,8 @@ SOURCES = \
     browser/BrowserOperationAttribute.cpp \
     CustomWidgets/GenericDelegate.cpp \
     CustomWidgets/quickeditcontrollersetup.cpp \
-    browserfunctions/operationfuncs.cpp
+    browserfunctions/operationfuncs.cpp \
+    tool/privateclass.cpp
 
 TARGET = douml
 DEFINES = BooL=bool DEBUGCOM

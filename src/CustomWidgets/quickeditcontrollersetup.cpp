@@ -502,10 +502,6 @@ void QuickEdit::SetupOperationAttributeController()
     }
     );
 
-
-
-
-
     std::function<void(BrowserNode* , const QModelIndex&)> f = [](BrowserNode* node, const QModelIndex& index)
     {
         BrowserOperationAttribute* oper = static_cast<BrowserOperationAttribute*>(node);

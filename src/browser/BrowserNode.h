@@ -114,6 +114,8 @@ public:
     BrowserNode(QString s, BrowserNode * parent);
     virtual ~BrowserNode();
 
+    void MoveNodes(Q3PtrList<BrowserNode> nodeList, BrowserNode* destination, BrowserNode *actionSource);
+
     virtual bool is_undefined() const;
 
    virtual QString get_name() const {

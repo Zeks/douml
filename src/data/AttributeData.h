@@ -120,6 +120,10 @@ public:
     bool get_isa_const_attribute() const {
         return isa_const_attribute;
     }
+    void set_isa_const_attribute(bool value)
+    {
+        isa_const_attribute = value;
+    }
 
     bool get_is_derived() const {
         return is_derived;

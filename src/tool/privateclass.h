@@ -1,0 +1,6 @@
+#ifndef PRIVATECLASS_H
+#define PRIVATECLASS_H
+
+
+
+#endif // PRIVATECLASS_H
