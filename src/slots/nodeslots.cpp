@@ -114,15 +114,17 @@ void NodeSlots::OnDuplicateMarkedInto()
         if((BrowserNode *) bn->parent()  != node)
         {
             BrowserNode* nodeCopy = bn->duplicate(node);
-            node->move(nodeCopy, 0);
+            //node->move(nodeCopy, 0);
+            node->move(nodeCopy, node);
+            nodeCopy->select_in_browser();
 
             if (nodeCopy->get_type() == UmlAttribute)
             {
                 BrowserAttribute* asAttribute =  dynamic_cast<BrowserAttribute*>(bn);
                 getOperCopy = ((BrowserNode *) asAttribute->get_get_oper())->duplicate(node);
                 setOperCopy = ((BrowserNode *) asAttribute->get_set_oper())->duplicate(node);
-                node->move(getOperCopy, 0);
-                node->move(setOperCopy, 0);
+                node->move(getOperCopy, nodeCopy);
+                node->move(setOperCopy, nodeCopy);
 
                 ((BrowserAttribute *) nodeCopy)->set_get_oper((BrowserOperation *) getOperCopy);
                 ((BrowserAttribute *) nodeCopy)->set_set_oper((BrowserOperation *) setOperCopy);
@@ -138,12 +140,12 @@ void NodeSlots::OnDuplicateMarkedInto()
                     setOperCopy = setOper->duplicate(node);
                 if(getOperCopy)
                 {
-                    node->move(getOperCopy, 0);
+                    node->move(getOperCopy, nodeCopy);
                     ((BrowserRelation *) nodeCopy)->set_get_oper((BrowserOperation *) getOperCopy);
                 }
                 if(setOperCopy)
                 {
-                    node->move(setOperCopy, 0);
+                    node->move(setOperCopy, nodeCopy);
                     ((BrowserRelation *) nodeCopy)->set_set_oper((BrowserOperation *) setOperCopy);
                 }
             }
