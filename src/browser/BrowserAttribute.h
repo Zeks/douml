@@ -36,14 +36,18 @@ class QPixmap;
 class AttributeData;
 class BrowserOperation;
 class BrowserClass;
+class BrowserAttribute;
 
 #include "BrowserNode.h"
 #include "Labeled.h"
+class AttributeSlots;
 
 class BrowserAttribute : public BrowserNode, public Labeled<BrowserAttribute>
 {
     friend class StereotypesDialog;
     friend class QuickEdit;
+    friend class AttributeSlots;
+    friend QMenu* AttributeMenu(BrowserNode* node);
 
 protected:
     static IdDict<BrowserAttribute> all;
@@ -57,6 +61,7 @@ protected:
     BrowserAttribute(int id);
 
     void exec_menu_choice(int rank);
+    virtual NodeSlots* NewSlotsObject();
 
 public:
     BrowserAttribute(QString s, BrowserNode * p, AttributeData * d, int id = 0);
@@ -84,6 +89,7 @@ public:
     virtual void paintCell(QPainter *, const QColorGroup &, int, int, int);
 
     virtual void menu();
+    virtual void Menu();
     virtual void apply_shortcut(QString s);
     virtual void open(bool);
     void open_new_ste_attr();
@@ -124,6 +130,8 @@ public:
     static const QStringList & default_stereotypes();
     static void read_stereotypes(char *& , char *& k);
     static void save_stereotypes(QTextStream &);
+    virtual int GetToolMenuBase();
+
 };
 
 #endif

@@ -38,7 +38,7 @@
 class Q3PopupMenu;
 class QObject;
 class QTextStream;
-
+class BrowserNode;
 class ATool
 {
 public:
@@ -65,6 +65,7 @@ public:
     static bool menu_insert(Q3PopupMenu * tool, UmlCode target,
                             const QObject * receiver, const char * member);
     static bool menu_insert(Q3PopupMenu * tool, UmlCode target, int first_id);
+    static bool Menu(QMenu * originMenu, BrowserNode* bn, UmlCode target, int first_id);
     static void shortcut(QString s, int & choice, UmlCode target, int first_id);
     static QStringList all_display();
     static const char * command(int rank);

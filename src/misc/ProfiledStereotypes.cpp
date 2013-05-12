@@ -51,6 +51,11 @@
 #include "translate.h"
 
 #include <q3ptrstack.h>
+ProfiledStereotypes::ProfiledStereotypes(QObject* parent):QObject(parent){}
+
+ProfiledStereotypes::~ProfiledStereotypes()
+{
+}
 
 struct ProfiledStereotype {
     ProfiledStereotype() : cl(0), properties_set(FALSE), browser_icon(0) {}
@@ -724,6 +729,14 @@ void ProfiledStereotypes::changed(BrowserClass * cl, QString oldname, bool newic
     }
 }
 
+void ProfiledStereotypes::deleted(BrowserNode * node)
+{
+    if(node->TypeID() == TypeIdentifier<BrowserClass>::id())
+        deleted(static_cast<BrowserClass*>(node));
+    else
+        deleted(static_cast<BrowserAttribute*>(node));
+}
+
 // the class is deleted or it is not a stereotype now
 // warning : must be called before any change on the class
 void ProfiledStereotypes::deleted(BrowserClass * cl)
@@ -799,6 +812,21 @@ const QPixmap * ProfiledStereotypes::diagramPixmap(const char * s, double zoom)
     ProfiledStereotype * st = All[s];
 
     return (st == 0) ? 0 : st->diagramPixmap(zoom);
+}
+
+void ProfiledStereotypes::OnCheckPlugout()
+{
+    callCheck(menuNode, false);
+}
+
+void ProfiledStereotypes::OnForceStereotypeConsistency()
+{
+    callCheck(menuNode, true);
+}
+
+void ProfiledStereotypes::OnCheckPlugoutsRecursively()
+{
+    recompute(false);
 }
 
 void ProfiledStereotypes::post_load()
@@ -1171,6 +1199,48 @@ void ProfiledStereotypes::menu(Q3PopupMenu & m, BrowserNode * bn, int bias)
                            TR("to call the <i>check plug-out</i> associated to the stereotypes,"
                               "doing down recursively"));
     }
+}
+
+QMenu* ProfiledStereotypes::Menu(BrowserNode *bn)
+{
+    menuNode = bn;
+    QMenu* menu = new QMenu();
+    QString sts = bn->get_data()->get_stereotype();
+    ProfiledStereotype * stereotype = All[sts];
+    bool separatorinserted = FALSE;
+
+    if (stereotype != 0)
+    {
+        const char * s = stereotype->cl->get_value("stereotypeCheck");
+
+        if ((s != 0) && (Tool::command(s) != 0))
+        {
+            separatorinserted = TRUE;
+            menu->insertSeparator();
+            menu->addAction(TR("Check"), this, SLOT(OnCheckPlugout()));
+        }
+    }
+
+    bool haveStereotypes = !All.isEmpty();
+
+    if (! haveStereotypes)
+    {
+        BrowserNodeList nodeList;
+
+        BrowserClass::instances(nodeList, "stereotype", TRUE);
+        haveStereotypes = !nodeList.isEmpty();
+    }
+
+    if (haveStereotypes)
+    {
+        if (! separatorinserted)
+            menu->insertSeparator();
+        menu->addAction(TR("Force stereotype consistency"), this, SLOT(OnForceStereotypeConsistency()));
+
+        if (!ProfiledStereotyped.isEmpty() && haveCheck(bn))
+            menu->addAction(TR("Check recursively"), this, SLOT(OnCheckPlugoutsRecursively()));
+    }
+    return menu;
 }
 
 // do action depending on menu choice

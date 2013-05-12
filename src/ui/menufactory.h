@@ -28,9 +28,9 @@
 
 #include <QMenu>
 #include <QMenuItem>
+#include <QHash>
 #include <Q3PopupMenu>
 #include "mystr.h"
-
 class MenuFactory
 {
 private:
@@ -81,7 +81,6 @@ public:
     virtual Q3PopupMenu & menu();
 
     virtual void insertSeparator();
-
 };
 
 #endif // MENUFACTORY_H

@@ -36,6 +36,7 @@
 //Added by qt3to4:
 #include <QDragMoveEvent>
 #include <QDropEvent>
+#include <memory>
 #include <Q3PopupMenu>
 #include <Q3PtrCollection>
 
@@ -67,8 +68,12 @@ class SimpleClassDiagramSettings;
 class BrowserNodeList;
 class ToolCom;
 class SaveProgress;
+class BrowserNode;
+class NodeSlots;
+
 
 /* This class is the base for every node presented in the tree-view on the left */
+/* And THAT is a fucking problem!!! */
 class BrowserNode : public Q3ListViewItem,
     public HaveKeyValueData,
     public Editable
@@ -78,6 +83,7 @@ protected:
     WrapperStr comment;
     QByteArray tempBa;
     friend class BrowserView;
+    friend class NodeSlots;
     int original_id = 0;	// from project library
     bool is_new = true;	// backup file useless
     bool is_deleted = false;
@@ -109,11 +115,14 @@ protected:
     void set_parent(Q3ListViewItem * parent);
     virtual bool delete_internal(QString & warning);
 
+
+
 public:
     BrowserNode(QString s, BrowserView * parent);
     BrowserNode(QString s, BrowserNode * parent);
     virtual ~BrowserNode();
-
+    std::unique_ptr<NodeSlots> nodeSlots;
+    virtual NodeSlots* NewSlotsObject();
     void MoveNodes(Q3PtrList<BrowserNode> nodeList, BrowserNode* destination, BrowserNode *actionSource);
 
     virtual bool is_undefined() const;
@@ -132,6 +141,7 @@ public:
     virtual bool in_edition() const;
 
     void mark_menu(Q3PopupMenu & m, const char *, int bias) const;
+    QMenu* markMenu();
     void mark_shortcut(QString s, int & index, int bias);
     void mark_management(int choice);
     void toggle_mark();
@@ -312,6 +322,12 @@ public:
 
     BrowserNode* get_first_generatable_node();
     QList<BrowserNode*> get_generation_list();
+    bool ParentsMarked(const BrowserNode* bn) const;
+    void CheckMovable(const Q3PtrList<BrowserNode>, bool& movable, bool& moveInsideSameClass);
+    int toolMenuBase = -1;
+    virtual int GetToolMenuBase();
+    //QMenu* nodeMenu = nullptr;
+
 };
 
 inline QString BrowserNode::fullname(bool rev) const

@@ -34,6 +34,7 @@
 #include <QPixmap>
 
 #include "UmlEnum.h"
+#include "SingletonHolder.h"
 
 class QPixmap;
 
@@ -43,9 +44,12 @@ class BrowserClassView;
 class BrowserAttribute;
 class BrowserNode;
 
-class ProfiledStereotypes
+class ProfiledStereotypes : public QObject
 {
+Q_OBJECT
 public:
+    ProfiledStereotypes(QObject* parent = 0);
+    ~ProfiledStereotypes();
     static void init();
     static void post_load();
     static void recompute(bool warm);
@@ -62,6 +66,8 @@ public:
     static QString canAddStereotype(BrowserClassView *, QString name);
     static void added(BrowserClass *);
     static void changed(BrowserClass *, QString oldname, bool newicon);
+    static void deleted(BrowserNode *);
+
     static void deleted(BrowserClass *);
     static void added(BrowserAttribute *);
     static void changed(BrowserAttribute *, QString oldname);
@@ -77,6 +83,13 @@ public:
     static bool enumerated(QString st, QStringList &);
     static const QPixmap * browserPixmap(const char * s);
     static const QPixmap * diagramPixmap(const char * s, double zoom);
+    QMenu *Menu(BrowserNode * bn);
+public slots:
+    void OnCheckPlugout();
+    void OnForceStereotypeConsistency();
+    void OnCheckPlugoutsRecursively();
+private:
+    BrowserNode* menuNode = nullptr;
 };
-
+BIND_TO_SELF_SINGLE(ProfiledStereotypes);
 #endif

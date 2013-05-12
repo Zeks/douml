@@ -239,7 +239,11 @@ HEADERS        = \
     browser/BrowserOperationAttribute.h \
     CustomWidgets/GenericDelegate.h \
     browserfunctions/operationfuncs.h \
-    tool/privateclass.h
+    tool/privateclass.h \
+    ui/menudispatcher.h \
+    slots/nodeSlots->h \
+    slots/nodeslots.h \
+    slots/attributeslots.h
 
 
 SOURCES = \
@@ -527,7 +531,10 @@ SOURCES = \
     CustomWidgets/GenericDelegate.cpp \
     CustomWidgets/quickeditcontrollersetup.cpp \
     browserfunctions/operationfuncs.cpp \
-    tool/privateclass.cpp
+    tool/privateclass.cpp \
+    ui/menudispatcher.cpp \
+    slots/nodeSlots.cpp \
+    slots/attributeslots.cpp
 
 TARGET = douml
 DEFINES = BooL=bool DEBUGCOM

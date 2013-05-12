@@ -36,6 +36,7 @@
 #include <QTextStream>
 #include <QPixmap>
 #include <QDropEvent>
+#include <memory>
 
 #include "BrowserAttribute.h"
 #include "BrowserOperation.h"
@@ -56,6 +57,7 @@
 #include "ProfiledStereotypes.h"
 #include "mu.h"
 #include "translate.h"
+#include "slots/attributeslots.h"
 
 IdDict<BrowserAttribute> BrowserAttribute::all(1021, __FILE__);
 QStringList BrowserAttribute::its_default_stereotypes;	// unicode
@@ -292,7 +294,8 @@ void BrowserAttribute::menu()
                        : TR("to edit the <i>attribute</i>,"
                             "a double click with the left mouse button does the same thing"));
 
-        if (!is_read_only && (edition_number == 0)) {
+        if (!is_read_only && (edition_number == 0))
+        {
             if (!item && (get_oper == 0))
                 m.setWhatsThis(m.insertItem(TR("New get operation"), 3),
                                TR("to auto define the <i>get operation</i>"));
@@ -316,17 +319,17 @@ void BrowserAttribute::menu()
         if (!is_read_only && (edition_number == 0)) {
             m.insertSeparator();
             m.setWhatsThis(m.insertItem(TR("Delete"), 1),
-                           (item) ? TR("to delete the <i>item</i>. \
-                                       Note that you can undelete it after")
-                           : TR("to delete the <i>attribute</i>. \
-                                            Note that you can undelete it after"));
+                           (item) ? TR("to delete the <i>item</i>. "
+                                       "Note that you can undelete it after")
+                           : TR("to delete the <i>attribute</i>. "
+                                            "Note that you can undelete it after"));
         }
 
         mark_menu(m, TR("the attribute"), 90);
         ProfiledStereotypes::menu(m, this, 99990);
 
-        if ((edition_number == 0) &&
-            Tool::menu_insert(&toolm, get_type(), 100)) {
+        if ((edition_number == 0) && Tool::menu_insert(&toolm, get_type(), 100))
+        {
             m.insertSeparator();
             m.insertItem(TR("Tool"), &toolm);
         }
@@ -337,6 +340,52 @@ void BrowserAttribute::menu()
                        : TR("to undelete the <i>attribute</i>"));
 
     exec_menu_choice(m.exec(QCursor::pos()));
+}
+
+void BrowserAttribute::Menu()
+{
+//    if(nodeMenu)
+//    //std::unique_ptr<QMenu> nodeMenu(new QMenu());
+//    //QMenu* toolMenu = new QMenu();
+//    QString stereotype = QString(((BrowserClass *) parent())->get_stereotype());
+//    bool item = ((stereotype == "enum_pattern" || stereotype == "enum") && QString(get_stereotype()) == "attribute");
+//    MenuFactory::createTitle(nodeMenu, def->definition(FALSE, TRUE));
+//    nodeMenu->insertSeparator();
+
+//    if (!deletedp())
+//    {
+//        if (!is_edited && (get_container(UmlClass) != 0))
+//            nodeMenu->addAction(TR("Up"), this, SLOT(OnGoUpOneLevel()));
+//        //QString editEntity = item ? TR("item") : TR("attribute");
+//        nodeMenu->addAction(TR("Edit"), this, SLOT(OnEdit()));
+
+//        bool editable = is_read_only && (edition_number == 0);
+//        bool requiresGetOperation = !item && (get_oper == 0) && editable;
+//        bool requiresSetOperation = !item && (set_oper == 0) && editable;
+//        bool requiresBothGetAndSetOperations = requiresGetOperation && requiresSetOperation;
+//        if(requiresGetOperation)
+//            nodeMenu->addAction(TR("New get operation"), this, SLOT(OnAddGetOperation()));
+//        if(requiresSetOperation)
+//            nodeMenu->addAction(TR("New set operation"), this, SLOT(OnAddSetOperation()));
+//        if(requiresBothGetAndSetOperations)
+//            nodeMenu->addAction(TR("New get and set operation"), this, SLOT(OnAddGetAndSetOperations()));
+//        if(editable)
+//            nodeMenu->addAction(TR("Duplicate"), this, SLOT(OnDuplicate()));
+//        nodeMenu->addAction(TR("Referenced by"), this, SLOT(OnShowReferencedBy()));
+//        if(editable)
+//        {
+//            nodeMenu->insertSeparator();
+//            nodeMenu->addAction(TR("Delete"), this, SLOT(OnDeleteItem()));
+//        }
+//        nodeMenu->addMenu(this->markMenu());
+//        nodeMenu->addMenu(An<ProfiledStereotypes>()->Menu(this));
+//        toolMenuBase = 100;
+//        if(edition_number == 0)
+//           Tool::Menu(nodeMenu.get(), this, get_type(), toolMenuBase);
+//     }
+//    else
+//        nodeMenu->addAction(TR("Undelete"), this, SLOT(OnUndeleteItem()));
+//    nodeMenu->popup(QCursor::pos());
 }
 
 void BrowserAttribute::exec_menu_choice(int rank)
@@ -402,6 +451,11 @@ void BrowserAttribute::exec_menu_choice(int rank)
 
     ((BrowserNode *) parent())->modified();
     package_modified();
+}
+
+NodeSlots *BrowserAttribute::NewSlotsObject()
+{
+    return new AttributeSlots();
 }
 
 void BrowserAttribute::apply_shortcut(QString s)
@@ -603,6 +657,11 @@ void BrowserAttribute::save_stereotypes(QTextStream & st)
     save_unicode_string_list(its_default_stereotypes, st);
 }
 
+int BrowserAttribute::GetToolMenuBase()
+{
+    return 100;
+}
+
 void BrowserAttribute::read_stereotypes(char *& st, char *& k)
 {
     if (!strcmp(k, "attribute_stereotypes") ||
@@ -736,3 +795,4 @@ BrowserNode * BrowserAttribute::get_it(const char * k, int id)
 {
     return (!strcmp(k, "attribute_ref")) ? all[id] : 0;
 }
+

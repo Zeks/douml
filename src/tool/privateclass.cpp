@@ -13,6 +13,26 @@
 #include "browser/BrowserClassView.h"
 #include <QMessageBox>
 
+BrowserNode* CreateDefaultConstructor(BrowserClass* originClass)
+{
+    BrowserNode* constructor = originClass->addOperation();
+    constructor->set_name(originClass->get_name());
+    return constructor;
+}
+
+QList<BrowserNode*> GetConstructors(BrowserClass* originClass)
+{
+    QList<BrowserNode*> result;
+    Q3ListViewItem* item;
+    for(item = originClass->firstChild(); item!=0; item->nextSibling())
+    {
+        BrowserNode* asNode = static_cast<BrowserNode*>(item);
+        if(asNode->get_name() == originClass->get_name())
+            result << asNode;
+    }
+    return result;
+}
+
 bool VerifySingleParent(QList<BrowserNode*> nodes)
 {
     BrowserNode* parent = nullptr;
@@ -32,6 +52,8 @@ BrowserClass* GetParent(QList<BrowserNode*> nodes)
     return static_cast<BrowserClass*>(nodes.at(0)->parent());
 }
 
+namespace DirectPrivateSplit
+{
 void CreateLinkToPublic(BrowserClass* originClass, BrowserClass* privateClass)
 {
     BrowserNode* privateConstructor = CreateDefaultConstructor(privateClass);
@@ -62,20 +84,6 @@ void CreateLinkToPublic(BrowserClass* originClass, BrowserClass* privateClass)
 
     privateClass->modified();
 }
-
-QList<BrowserNode*> GetConstructors(BrowserClass* originClass)
-{
-    QList<BrowserNode*> result;
-    Q3ListViewItem* item;
-    for(item = originClass->firstChild(); item!=0; item->nextSibling())
-    {
-        BrowserNode* asNode = static_cast<BrowserNode*>(item);
-        if(asNode->get_name() == originClass->get_name())
-            result << asNode;
-    }
-    return result;
-}
-
 void InsertPrivateLinkIntoConstructorDefinition(BrowserNode* constructor, BrowserNode* privateClass)
 {
     BrowserOperation* asOperation = static_cast<BrowserOperation*>(constructor);
@@ -97,14 +105,6 @@ void InsertPrivateLinkIntoConstructorDefinition(BrowserNode* constructor, Browse
     asOperation->modified();
 
 }
-
-BrowserNode* CreateDefaultConstructor(BrowserClass* originClass)
-{
-    BrowserNode* constructor = originClass->addOperation();
-    constructor->set_name(originClass->get_name());
-    return constructor;
-}
-
 void CreateLinkToPrivate(BrowserClass* originClass, BrowserClass* privateClass)
 {
 
@@ -144,7 +144,7 @@ BrowserClass* CreatePrivateClass(BrowserClass* originClass)
     CreateLinkToPrivate(originClass, privateClass);
     return privateClass;
 }
-
+}
 BrowserArtifact* CreatePrivateClassArtifact(BrowserClass* cl)
 {
     if(!cl)
@@ -221,7 +221,7 @@ bool FindPrivate(BrowserClass* originClass, BrowserClass*& privateClass, bool as
     if(it.current() != 0)
         privateClass = static_cast<BrowserClass*>(it.current());
     if(privateClass == nullptr && askForNewClass && RequestNewPrivateClass())
-        CreatePrivateClass(originClass);
+        DirectPrivateSplit::CreatePrivateClass(originClass);
     if(privateClass == nullptr)
         return false;
     return true;

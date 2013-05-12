@@ -38,7 +38,9 @@
 #include "Tool.h"
 #include "myio.h"
 #include "BrowserView.h"
+#include "BrowserNode.h"
 #include "err.h"
+#include "slots/nodeslots.h"
 
 unsigned Tool::ntools;
 ATool * Tool::tools;
@@ -201,6 +203,26 @@ bool Tool::menu_insert(Q3PopupMenu * tool, UmlCode target, int first_id)
         }
     }
 
+    return have;
+}
+
+bool Tool::Menu(QMenu * originMenu, BrowserNode* bn, UmlCode target, int first_id)
+{
+    unsigned index;
+    bool have = FALSE;
+    QMenu * toolMenu = new QMenu();
+    static QList<QString> failingTools = SetupFailingTools();
+
+    for (index = 0; index != ntools; index += 1) {
+        if (tools[index].applicable[target] && !failingTools.contains(tools[index].display)) {
+            have = TRUE;
+            QAction* action = toolMenu->addAction(tools[index].display, (bn->nodeSlots).get(), SLOT(OnExecuteToolOfChoice()));
+            action->setData(first_id + index);
+        }
+    }
+    originMenu->addSeparator();
+    originMenu->addMenu(toolMenu);
+    originMenu->addSeparator();
     return have;
 }
 

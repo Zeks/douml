@@ -78,7 +78,9 @@
 #include "ReferenceDialog.h"
 #include "OperationData.h"
 #include "translate.h"
+#include "tool/Tool.h"
 #include "../Logging/QsLog.h"
+#include "slots/nodeSlots.h"
 
 QList<UmlCode> BrowserNode::generatable_types;
 Q3PtrList<BrowserNode> BrowserNode::marked_list;
@@ -106,16 +108,18 @@ QString BrowserNode::FullPathDotDot = "::";
 BrowserView* BrowserNode::viewptr = 0;
 BrowserNode::BrowserNode(QString s, BrowserView * parent)
     : Q3ListViewItem(parent, s),
-      name(s)
+      name(s), nodeSlots(NewSlotsObject())
 {
+    nodeSlots->SetOrigin(this);
     viewptr = parent;
 }
 
 BrowserNode::BrowserNode(QString s, BrowserNode * parent)
     : Q3ListViewItem(parent, s),
-      name(s)
+      name(s), nodeSlots(NewSlotsObject())
 {
 
+    nodeSlots->SetOrigin(this);
     // move it at end
     Q3ListViewItem * child = parent->firstChild();
 
@@ -127,19 +131,26 @@ BrowserNode::BrowserNode(QString s, BrowserNode * parent)
 }
 
 BrowserNode::BrowserNode()
-    : Q3ListViewItem(UndefinedNodePackage, "<not yet read>")
+    : Q3ListViewItem(UndefinedNodePackage, "<not yet read>"), nodeSlots(NewSlotsObject())
 {
+    nodeSlots->SetOrigin(this);
 }
 
 BrowserNode::BrowserNode(Q3ListView * view)
-    : Q3ListViewItem(view, "<not yet read>")
+    : Q3ListViewItem(view, "<not yet read>"), nodeSlots(NewSlotsObject())
 {
+    nodeSlots->SetOrigin(this);
 }
 
 BrowserNode::~BrowserNode()
 {
     if (is_marked)
         marked_list.removeRef(this);
+}
+
+NodeSlots* BrowserNode::NewSlotsObject()
+{
+    return new NodeSlots();
 }
 
 void BrowserNode::MoveNodes(Q3PtrList<BrowserNode> nodeList, BrowserNode *destination, BrowserNode *actionSource)
@@ -370,11 +381,11 @@ void BrowserNode::undelete(bool recursive)
 
     if (!warning.isEmpty())
         warning = "<p>" + TR("Some items cannot be undeleted") + " :\n<ul>"
-                  + warning + "</ul></p>";
+                + warning + "</ul></p>";
 
     if (! renamed.isEmpty()) {
         warning += "<p>" + TR("Some items are renamed") + " :\n<ul>"
-                   + renamed + "</ul></p>";
+                + renamed + "</ul></p>";
     }
 
     if (!warning.isEmpty())
@@ -455,9 +466,9 @@ void BrowserNode::set_name(QString  s)
     bool firsttime = name.isEmpty();
     name = s;
 
-        if (! firsttime)
-            // else set by BrowserNode::post_load()
-            update_stereotype();
+    if (! firsttime)
+        // else set by BrowserNode::post_load()
+        update_stereotype();
 }
 
 //
@@ -515,8 +526,8 @@ QString BrowserNode::stereotypes_properties() const
     const char * stereotype = get_data()->get_stereotype();
 
     if (show_stereotypes &&
-        stereotype[0] &&
-        ProfiledStereotypes::isModeled(stereotype)) {
+            stereotype[0] &&
+            ProfiledStereotypes::isModeled(stereotype)) {
         int nk = (int) get_n_keys();
         QString nl("\n");
         QString result;
@@ -543,7 +554,7 @@ QString BrowserNode::stereotypes_properties() const
 
         if (! result.isEmpty())
             return QString("<<") + get_data()->get_short_stereotype() +
-                   QString(">>") + result;
+                    QString(">>") + result;
     }
 
     return QString();
@@ -572,7 +583,7 @@ void BrowserNode::paintCell(QPainter * p, const QColorGroup & cg, int column,
 void BrowserNode::pre_load()
 {
     UndefinedNodePackage =
-        new BrowserPackage("<temporary package>", BrowserView::get_project(), -1);
+            new BrowserPackage("<temporary package>", BrowserView::get_project(), -1);
 }
 
 void BrowserNode::post_load(bool light)
@@ -648,7 +659,7 @@ void BrowserNode::on_close()
 
 uint BrowserNode::TypeID()
 {
-   return TypeIdentifier<BrowserNode>::id();
+    return TypeIdentifier<BrowserNode>::id();
 }
 
 BrowserNode * BrowserNode::get_container(UmlCode k) const
@@ -825,6 +836,44 @@ QList<BrowserNode *> BrowserNode::get_generation_list()
     return result;
 }
 
+bool BrowserNode::ParentsMarked(const BrowserNode *bn) const
+{
+    bool result = false;
+    while (bn != BrowserView::get_project())
+    {
+        bn = (BrowserNode *) bn->parent();
+
+        if (bn->is_marked)
+        {
+            result = true;
+            break;
+        }
+    }
+    return result;
+}
+
+void BrowserNode::CheckMovable(const Q3PtrList<BrowserNode> marked_list, bool& movable, bool& moveInsideSameClass)
+{
+    Q3PtrListIterator<BrowserNode> it(marked_list);
+    BrowserNode * bn;
+    for (; (bn = it.current()) != 0; ++it)
+    {
+        if(bn->parent() != this->parent())
+            moveInsideSameClass = false;
+        if ((bn == BrowserView::get_project()) ||
+                !((BrowserNode *) bn->parent())->is_writable())
+        {
+            movable = false;
+            break;
+        }
+    }
+}
+
+int BrowserNode::GetToolMenuBase()
+{
+    return -1;
+}
+
 //
 
 void BrowserNode::open(bool)
@@ -851,7 +900,7 @@ void BrowserNode::edit(const char * s, const QStringList & default_stereotypes)
 
         (new BasicDialog(get_data(), s, default_stereotypes,
                          previous_size[get_type()]))
-        ->show();
+                ->show();
     }
 }
 
@@ -929,7 +978,7 @@ bool BrowserNode::may_contains_it(BrowserNode * bn) const
 
     for (Q3ListViewItem * child = firstChild(); child; child = child->nextSibling()) {
         if (!((BrowserNode *) child)->deletedp() &&
-            ((BrowserNode *) child)->same_name(s, type))
+                ((BrowserNode *) child)->same_name(s, type))
             return FALSE;
     }
 
@@ -976,7 +1025,7 @@ void BrowserNode::mark_menu(Q3PopupMenu & m, const char * s, int bias) const
                 if(bn->parent() != this->parent())
                     moveInsideSameClass = false;
                 if ((bn == BrowserView::get_project()) ||
-                    !((BrowserNode *) bn->parent())->is_writable())
+                        !((BrowserNode *) bn->parent())->is_writable())
                 {
                     moveable = FALSE;
 #ifndef SIMPLE_DUPLICATION
@@ -1054,6 +1103,60 @@ void BrowserNode::mark_menu(Q3PopupMenu & m, const char * s, int bias) const
     }
 }
 
+
+QMenu* BrowserNode::markMenu()
+{
+    QMenu* markMenu = new QMenu();
+    QString markText = is_marked ? TR("Mark") : TR("Unmark");
+    markMenu->addAction(markText, nodeSlots.get(), SLOT(OnMarkCurrentItem()));
+    if(!marked_list.isEmpty())
+        markMenu->addAction(TR("Unmark all"), nodeSlots.get(), SLOT(OnUnmarkAllItems()));
+    if(is_marked)
+        return markMenu;
+
+    if (!marked_list.isEmpty())
+    {
+        bool parents_marked = ParentsMarked(this);
+
+        bool moveable = true;
+        bool moveInsideSameClass = true;
+        CheckMovable(marked_list, moveable, moveInsideSameClass);
+
+        bool duplicable_into = true;
+        bool duplicable_after = true;
+        bool canContain = may_contains_them(marked_list, duplicable_into);
+        bool into = canContain && is_writable();
+        bool thisIsntProject = this != BrowserView::get_project();
+        bool isWritable = true;
+        bool parentCanContain = false;
+
+        if(((BrowserNode *) parent()) != 0)
+        {
+            isWritable = ((BrowserNode *) parent())->is_writable();
+            parentCanContain = ((BrowserNode *) parent())->may_contains_them(marked_list, duplicable_after);
+        }
+
+        bool after = thisIsntProject && isWritable &&  ( parentCanContain || moveInsideSameClass);
+
+        if (!parents_marked && moveable && into)
+            markMenu->addAction(TR("Move marked into"), nodeSlots.get(), SLOT(OnMoveMarkedInto()));
+        if (!parents_marked && moveable && after)
+            markMenu->addAction(TR("Move marked into"), nodeSlots.get(), SLOT(OnMoveMarkedAfter()));
+        if (!parents_marked && moveable )
+            markMenu->insertSeparator();
+
+
+        if (into && duplicable_into)
+            markMenu->addAction(TR("Duplicate marked into"), nodeSlots.get(), SLOT(OnDuplicateMarkedInto()));
+
+        if (after && duplicable_after)
+            markMenu->addAction(TR("Duplicate marked after"), nodeSlots.get(), SLOT(OnDuplicateMarkedAfter()));
+
+    }
+    return markMenu;
+}
+
+
 void BrowserNode::mark_shortcut(QString s, int & index, int bias)
 {
     if (! is_marked) {
@@ -1091,7 +1194,7 @@ void BrowserNode::mark_management(int choice)
 
     case 4:// move after
         MoveNodes(marked_list, (BrowserNode *) parent(), this);
-    break;
+        break;
 
     case 5:	// duplicate into
         for (bn = marked_list.last();
@@ -1164,7 +1267,7 @@ void BrowserNode::mark_management(int choice)
              bn = marked_list.prev())
             p->move(bn->duplicate(p), this);
     }
-    break;
+        break;
 #ifndef SIMPLE_DUPLICATION
 
     case 8:	// duplicate recursivelly after
@@ -1258,11 +1361,11 @@ void BrowserNode::set_marked(bool value)
 
     //repaint();
 
-//    if (BrowserSearchDialog::get() != 0)
-//        BrowserSearchDialog::get()->update();
+    //    if (BrowserSearchDialog::get() != 0)
+    //        BrowserSearchDialog::get()->update();
 
-//    if (ReferenceDialog::get() != 0)
-//        ReferenceDialog::get()->update();
+    //    if (ReferenceDialog::get() != 0)
+    //        ReferenceDialog::get()->update();
     if(marked_list.count() != 0)
         UmlWindow::set_marked_generation();
     else
@@ -1274,7 +1377,7 @@ void BrowserNode::set_marked(bool value)
 void BrowserNode::setup_generatable_types()
 {
     generatable_types << UmlClass << UmlComponent << UmlDeploymentNode << UmlArtifact
-                         << UmlClassView << UmlComponentView << UmlDeploymentView << UmlPackage << UmlProject;
+                      << UmlClassView << UmlComponentView << UmlDeploymentView << UmlPackage << UmlProject;
 }
 
 //
@@ -1292,8 +1395,8 @@ bool BrowserNode::may_contains(BrowserNode * bn, bool rec) const
 
         for (Q3ListViewItem * child = firstChild(); child; child = child->nextSibling()) {
             if (!((BrowserNode *) child)->deletedp() &&
-                // case already check : (child != bn) &&
-                ((BrowserNode *) child)->same_name(s, type))
+                    // case already check : (child != bn) &&
+                    ((BrowserNode *) child)->same_name(s, type))
                 return FALSE;
         }
     }
@@ -1392,7 +1495,7 @@ bool BrowserNode::enter_child_name(QString & r, const QString & msg, UmlCode typ
 
         r = (list.count() == 1)
                 ? MyInputDialog::getText("Uml", msg, QString(), ok)
-            : MyInputDialog::getText("Uml", msg, list,  QString(), existing, ok);
+                : MyInputDialog::getText("Uml", msg, list,  QString(), existing, ok);
 
         if (! ok)
             return FALSE;
@@ -1414,7 +1517,7 @@ bool BrowserNode::enter_child_name(QString & r, const QString & msg, UmlCode typ
 }
 
 bool BrowserNode::wrong_child_name( const QString & s, UmlCode type,
-                                   bool allow_spaces, bool allow_empty) const
+                                    bool allow_spaces, bool allow_empty) const
 {
     if (s.isEmpty())
         return !allow_empty;
@@ -1449,9 +1552,9 @@ bool BrowserNode::wrong_child_name( const QString & s, UmlCode type,
                 char c = *str++;
 
                 if (((c >= 'a') && (c <= 'z')) ||
-                    ((c >= 'A') && (c <= 'Z')) ||
-                    ((c >= '0') && (c <= '9')) ||
-                    (c == '_'))
+                        ((c >= 'A') && (c <= 'Z')) ||
+                        ((c >= '0') && (c <= '9')) ||
+                        (c == '_'))
                     ;
                 else if ((strchr("()&^[]%|!+-*/=>", c) != 0) ||
                          (((c == ' ') || (c == '\t') || (c == '\r')) &&
@@ -1473,7 +1576,7 @@ bool BrowserNode::wrong_child_name( const QString & s, UmlCode type,
     for (Q3ListViewItem * child = firstChild(); child; child = child->nextSibling())
     {
         if (!((BrowserNode *) child)->deletedp() &&
-            ((BrowserNode *) child)->same_name(s, type))
+                ((BrowserNode *) child)->same_name(s, type))
             return TRUE;
     }
 
@@ -1555,17 +1658,17 @@ bool BrowserNode::tool_cmd(ToolCom * com, const char * args)
 
         for (child = firstChild(); child != 0; child = child->nextSibling())
             if (!((BrowserNode *) child)->deletedp() &&
-                ((BrowserNode *) child)->api_compatible(v))
+                    ((BrowserNode *) child)->api_compatible(v))
                 n += 1;
 
         com->write_unsigned(n);
 
         for (child = firstChild(); child != 0; child = child->nextSibling())
             if (!((BrowserNode *) child)->deletedp() &&
-                ((BrowserNode *) child)->api_compatible(v))
+                    ((BrowserNode *) child)->api_compatible(v))
                 ((BrowserNode *) child)->write_id(com);
     }
-    break;
+        break;
 
     case getDefCmd:
     case getUmlDefCmd:
@@ -1609,7 +1712,7 @@ bool BrowserNode::tool_cmd(ToolCom * com, const char * args)
         for (bn = targetof.first(); bn != 0; bn = targetof.next())
             bn->write_id(com);
     }
-    break;
+        break;
 
     case setCoupleValueCmd:
         if (is_read_only && !root_permission())
@@ -1640,8 +1743,8 @@ bool BrowserNode::tool_cmd(ToolCom * com, const char * args)
         else {
             if (name != args) {
                 if (((BrowserNode *) parent())->wrong_child_name(args, get_type(),
-                        allow_spaces(),
-                        allow_empty())) {
+                                                                 allow_spaces(),
+                                                                 allow_empty())) {
                     com->write_ack(FALSE);
                     return TRUE;
                 }
@@ -1874,15 +1977,15 @@ BrowserNode * BrowserNode::read_any_ref(char *& st, char * k)
     BrowserNode * r;
 
     if (((r = BrowserActivity::read_any_ref(st, k)) == 0) &&
-        ((r = BrowserState::read_any_ref(st, k)) == 0) &&
-        ((r = BrowserClass::read_any_ref(st, k)) == 0) &&
-        ((r = BrowserDiagram::read_any_ref(st, k)) == 0) &&
-        ((r = BrowserPackage::read(st, k, 0, FALSE)) == 0) &&
-        ((r = BrowserUseCase::read(st, k, 0)) == 0) &&
-        ((r = BrowserClassInstance::read(st, k, 0)) == 0) &&
-        ((r = BrowserComponent::read(st, k, 0)) == 0) &&
-        ((r = BrowserArtifact::read(st, k, 0)) == 0) &&
-        ((r = BrowserDeploymentNode::read(st, k, 0)) == 0))
+            ((r = BrowserState::read_any_ref(st, k)) == 0) &&
+            ((r = BrowserClass::read_any_ref(st, k)) == 0) &&
+            ((r = BrowserDiagram::read_any_ref(st, k)) == 0) &&
+            ((r = BrowserPackage::read(st, k, 0, FALSE)) == 0) &&
+            ((r = BrowserUseCase::read(st, k, 0)) == 0) &&
+            ((r = BrowserClassInstance::read(st, k, 0)) == 0) &&
+            ((r = BrowserComponent::read(st, k, 0)) == 0) &&
+            ((r = BrowserArtifact::read(st, k, 0)) == 0) &&
+            ((r = BrowserDeploymentNode::read(st, k, 0)) == 0))
         r = BrowserSimpleRelation::read(st, k, 0);
 
     return r;
@@ -1951,26 +2054,26 @@ static Q3PtrList<BrowserNode> ModifiedPackages;
 void BrowserNode::signal_unconsistencies()
 {
     QString pfix =
-        TR("<p><b>Warning, the model is not consistent because some elements have\n"
-           "the same internal identifier.</b></p>\n"
-           "<p>Users working on the same project have the same use identifier,\n"
-           "or you had change the model files, or used Project synchro\n"
-           "without following the mandatory rules</p>\n");
+            TR("<p><b>Warning, the model is not consistent because some elements have\n"
+               "the same internal identifier.</b></p>\n"
+               "<p>Users working on the same project have the same use identifier,\n"
+               "or you had change the model files, or used Project synchro\n"
+               "without following the mandatory rules</p>\n");
     QString msg;
 
     if (!UnconsistencyDeletedMsg.isEmpty())
         msg = pfix + "<p>" + TR("These elements was <b>removed</b>") + " :</p>\n <ul>"
-              + UnconsistencyDeletedMsg + "</ul>\n";
+                + UnconsistencyDeletedMsg + "</ul>\n";
 
     if (!UnconsistencyFixedMsg.isEmpty()) {
         if (UnconsistencyDeletedMsg.isEmpty())
             msg = pfix;
 
         msg += "<p>"
-               + TR("The internal identifier of these elements was changed,\n"
-                    "but <u>I can't garantee the references to them are the right one</u>,\n"
-                    "check your model")
-               + " :</p>\n<ul>" + UnconsistencyFixedMsg + "</ul>\n";
+                + TR("The internal identifier of these elements was changed,\n"
+                     "but <u>I can't garantee the references to them are the right one</u>,\n"
+                     "check your model")
+                + " :</p>\n<ul>" + UnconsistencyFixedMsg + "</ul>\n";
 
         do_change_shared_ids();
 
@@ -1989,8 +2092,8 @@ void BrowserNode::signal_unconsistencies()
 void BrowserNode::unconsistent_fixed(const char * what, BrowserNode * newone)
 {
     UnconsistencyFixedMsg += QString("<li>") + what + QString(" <i>") +
-                             quote(full_name()) + QString("</i> and <i>") +
-                             quote(newone->full_name()) + QString("</i></li>\n");
+            quote(full_name()) + QString("</i> and <i>") +
+            quote(newone->full_name()) + QString("</i></li>\n");
 
     BrowserNode * bn = this;
 
@@ -2004,8 +2107,8 @@ void BrowserNode::unconsistent_fixed(const char * what, BrowserNode * newone)
 void BrowserNode::unconsistent_removed(const char * what, BrowserNode * newone)
 {
     UnconsistencyDeletedMsg += QString("<li>") + what + QString(" <i>") +
-                               quote(full_name()) + QString("</i> and <i>") +
-                               quote(newone->full_name()) + QString("</i></li>\n");
+            quote(full_name()) + QString("</i> and <i>") +
+            quote(newone->full_name()) + QString("</i></li>\n");
 
     // deletion managed elsewhere
 }
@@ -2042,12 +2145,12 @@ void BrowserNodeList::search(BrowserNode * bn, UmlCode k, const QString & s,
                  ((k == UmlRelations)
                   ? IsaRelation(ch->get_type())
                   : (ch->get_type() == k))) &&
-                (s.isEmpty() ||
-                 (QString((for_name)
-                          ? ch->get_name()
-                          : ((for_stereotype) ? QString(ch->get_stereotype())
-                             : QString(ch->get_comment())))
-                  .find(s, 0, cs) != -1)))
+                    (s.isEmpty() ||
+                     (QString((for_name)
+                              ? ch->get_name()
+                              : ((for_stereotype) ? QString(ch->get_stereotype())
+                                 : QString(ch->get_comment())))
+                      .find(s, 0, cs) != -1)))
                 append((BrowserNode *) child);
 
             search((BrowserNode *) child, k, s, cs, even_deleted,
@@ -2069,8 +2172,8 @@ void BrowserNodeList::search_ddb(BrowserNode * bn, UmlCode k, const QString & s,
                  ((k == UmlRelations)
                   ? IsaRelation(ch->get_type())
                   : (ch->get_type() == k))) &&
-                (s.isEmpty() ||
-                 ch->get_data()->decldefbody_contain(s, cs, ch)))
+                    (s.isEmpty() ||
+                     ch->get_data()->decldefbody_contain(s, cs, ch)))
                 append(ch);
 
             search_ddb(ch, k, s, cs, even_deleted);
@@ -2150,3 +2253,4 @@ void BrowserNodeList::full_defs(QStringList & list) const
         ++it;
     }
 }
+
