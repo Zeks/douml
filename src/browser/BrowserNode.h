@@ -141,7 +141,7 @@ public:
     virtual bool in_edition() const;
 
     void mark_menu(Q3PopupMenu & m, const char *, int bias) const;
-    QMenu* markMenu();
+    void markMenu(QMenu *);
     void mark_shortcut(QString s, int & index, int bias);
     void mark_management(int choice);
     void toggle_mark();

@@ -47,7 +47,7 @@ class BrowserAttribute : public BrowserNode, public Labeled<BrowserAttribute>
     friend class StereotypesDialog;
     friend class QuickEdit;
     friend class AttributeSlots;
-    friend QMenu* AttributeMenu(BrowserNode* node);
+    friend QMenu* AttributeMenu(BrowserNode* node, QList<QMenu*>&);
 
 protected:
     static IdDict<BrowserAttribute> all;
@@ -88,8 +88,8 @@ public:
     virtual const QPixmap * pixmap(int) const;
     virtual void paintCell(QPainter *, const QColorGroup &, int, int, int);
 
+    //virtual void menu();
     virtual void menu();
-    virtual void Menu();
     virtual void apply_shortcut(QString s);
     virtual void open(bool);
     void open_new_ste_attr();

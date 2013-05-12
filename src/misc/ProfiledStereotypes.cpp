@@ -1201,10 +1201,9 @@ void ProfiledStereotypes::menu(Q3PopupMenu & m, BrowserNode * bn, int bias)
     }
 }
 
-QMenu* ProfiledStereotypes::Menu(BrowserNode *bn)
+QMenu* ProfiledStereotypes::Menu(QMenu* menu, BrowserNode *bn)
 {
     menuNode = bn;
-    QMenu* menu = new QMenu();
     QString sts = bn->get_data()->get_stereotype();
     ProfiledStereotype * stereotype = All[sts];
     bool separatorinserted = FALSE;
@@ -1217,7 +1216,7 @@ QMenu* ProfiledStereotypes::Menu(BrowserNode *bn)
         {
             separatorinserted = TRUE;
             menu->insertSeparator();
-            menu->addAction(TR("Check"), this, SLOT(OnCheckPlugout()));
+            menu->addAction(TR("Check"), this, SLOT(OnCheckPlugout()))->setParent(menu);
         }
     }
 
@@ -1235,10 +1234,10 @@ QMenu* ProfiledStereotypes::Menu(BrowserNode *bn)
     {
         if (! separatorinserted)
             menu->insertSeparator();
-        menu->addAction(TR("Force stereotype consistency"), this, SLOT(OnForceStereotypeConsistency()));
+        menu->addAction(TR("Force stereotype consistency"), this, SLOT(OnForceStereotypeConsistency()))->setParent(menu);
 
         if (!ProfiledStereotyped.isEmpty() && haveCheck(bn))
-            menu->addAction(TR("Check recursively"), this, SLOT(OnCheckPlugoutsRecursively()));
+            menu->addAction(TR("Check recursively"), this, SLOT(OnCheckPlugoutsRecursively()))->setParent(menu);
     }
     return menu;
 }

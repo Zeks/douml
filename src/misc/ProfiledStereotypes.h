@@ -83,7 +83,7 @@ public:
     static bool enumerated(QString st, QStringList &);
     static const QPixmap * browserPixmap(const char * s);
     static const QPixmap * diagramPixmap(const char * s, double zoom);
-    QMenu *Menu(BrowserNode * bn);
+    QMenu *Menu(QMenu *originMenu, BrowserNode * bn);
 public slots:
     void OnCheckPlugout();
     void OnForceStereotypeConsistency();

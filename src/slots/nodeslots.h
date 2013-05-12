@@ -47,7 +47,7 @@ public slots:
     void OnMoveMarkedInto();
     void OnMoveMarkedAfter();
     void OnDuplicateMarkedInto();
-    void OnDuplicateMarkedAFter();
+    void OnDuplicateMarkedAfter();
     void OnGoUpOneLevel();
     void OnEdit();
     void OnExecuteToolOfChoice();

@@ -12,12 +12,19 @@ diagrams
     1282 501 100 4 0 0
 end
 show_stereotypes
-selected class_ref 131842 // UmlJunctionPseudoState
+selected attribute_ref 128258 // add_destr
 open
   classview_ref 641 // Diagrams
-  classview_ref 769 // API USER class view
-  classview_ref 129154 // Diagram Class view
+  class_ref 7041 // UmlAttribute
+  class_ref 8193 // UmlArtifact
+  class_ref 151298 // UmlRaiseExceptionAction
+  class_ref 141314 // UmlFlowFinalActivityNode
+  class_ref 141570 // UmlActivityFinalActivityNode
+  class_ref 142594 // UmlJoinActivityNode
+  class_ref 148354 // UmlCollaborationMessage
+  class_ref 148610 // UmlUseCaseDiagramDefinition
+  class_ref 148866 // UmlSequenceDiagramDefinition
   deploymentview_ref 129154 // Diagram Deployment view
-  artifact_ref 132738 // ConstrDestrCopyDialog
+  class_ref 132738 // ConstrDestrCopyDialog
 end
 end

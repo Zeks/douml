@@ -40,16 +40,16 @@ public:
     MenuDispatcher();
     ~MenuDispatcher();
     QMenu* GetMenu(uint classID, BrowserNode*);
-    void AddMenu(uint classID, std::function<QMenu*(BrowserNode*)> menuCreator);
+    void AddMenu(uint classID, std::function<QMenu*(BrowserNode*, QList<QMenu*>&)> menuCreator);
 
 private:
     void DeleteLastMenu();
-    QHash<uint, std::function<QMenu*(BrowserNode*)>> menuCreators;
-    QMenu* lastMenu;
+    QHash<uint, std::function<QMenu*(BrowserNode*, QList<QMenu*>&)>> menuCreators;
+    QList<QMenu*> lastMenus;
 };
 BIND_TO_SELF_SINGLE(MenuDispatcher);
 
 
-QMenu* AttributeMenu(BrowserNode*node);
+QMenu* AttributeMenu(BrowserNode* node, QList<QMenu*>&);
 
 #endif // MENUDISPATCHER_H

@@ -210,19 +210,16 @@ bool Tool::Menu(QMenu * originMenu, BrowserNode* bn, UmlCode target, int first_i
 {
     unsigned index;
     bool have = FALSE;
-    QMenu * toolMenu = new QMenu();
     static QList<QString> failingTools = SetupFailingTools();
 
     for (index = 0; index != ntools; index += 1) {
         if (tools[index].applicable[target] && !failingTools.contains(tools[index].display)) {
             have = TRUE;
-            QAction* action = toolMenu->addAction(tools[index].display, (bn->nodeSlots).get(), SLOT(OnExecuteToolOfChoice()));
+            QAction* action = originMenu->addAction(tools[index].display, (bn->nodeSlots).get(), SLOT(OnExecuteToolOfChoice()));
             action->setData(first_id + index);
+            action->setParent(originMenu);
         }
     }
-    originMenu->addSeparator();
-    originMenu->addMenu(toolMenu);
-    originMenu->addSeparator();
     return have;
 }
 

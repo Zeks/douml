@@ -1104,15 +1104,14 @@ void BrowserNode::mark_menu(Q3PopupMenu & m, const char * s, int bias) const
 }
 
 
-QMenu* BrowserNode::markMenu()
+void BrowserNode::markMenu(QMenu* originMenu)
 {
-    QMenu* markMenu = new QMenu();
     QString markText = is_marked ? TR("Mark") : TR("Unmark");
-    markMenu->addAction(markText, nodeSlots.get(), SLOT(OnMarkCurrentItem()));
+    originMenu->addAction(markText, nodeSlots.get(), SLOT(OnMarkCurrentItem()))->setParent(originMenu);
     if(!marked_list.isEmpty())
-        markMenu->addAction(TR("Unmark all"), nodeSlots.get(), SLOT(OnUnmarkAllItems()));
+        originMenu->addAction(TR("Unmark all"), nodeSlots.get(), SLOT(OnUnmarkAllItems()))->setParent(originMenu);
     if(is_marked)
-        return markMenu;
+        return;
 
     if (!marked_list.isEmpty())
     {
@@ -1139,21 +1138,20 @@ QMenu* BrowserNode::markMenu()
         bool after = thisIsntProject && isWritable &&  ( parentCanContain || moveInsideSameClass);
 
         if (!parents_marked && moveable && into)
-            markMenu->addAction(TR("Move marked into"), nodeSlots.get(), SLOT(OnMoveMarkedInto()));
+            originMenu->addAction(TR("Move marked into"), nodeSlots.get(), SLOT(OnMoveMarkedInto()))->setParent(originMenu);
         if (!parents_marked && moveable && after)
-            markMenu->addAction(TR("Move marked into"), nodeSlots.get(), SLOT(OnMoveMarkedAfter()));
+            originMenu->addAction(TR("Move marked into"), nodeSlots.get(), SLOT(OnMoveMarkedAfter()))->setParent(originMenu);
         if (!parents_marked && moveable )
-            markMenu->insertSeparator();
+            originMenu->insertSeparator();
 
 
         if (into && duplicable_into)
-            markMenu->addAction(TR("Duplicate marked into"), nodeSlots.get(), SLOT(OnDuplicateMarkedInto()));
+            originMenu->addAction(TR("Duplicate marked into"), nodeSlots.get(), SLOT(OnDuplicateMarkedInto()))->setParent(originMenu);
 
         if (after && duplicable_after)
-            markMenu->addAction(TR("Duplicate marked after"), nodeSlots.get(), SLOT(OnDuplicateMarkedAfter()));
+            originMenu->addAction(TR("Duplicate marked after"), nodeSlots.get(), SLOT(OnDuplicateMarkedAfter()))->setParent(originMenu);
 
     }
-    return markMenu;
 }
 
 
@@ -1262,9 +1260,7 @@ void BrowserNode::mark_management(int choice)
     case 7: {	// duplicate after
         BrowserNode * p = (BrowserNode *) parent();
 
-        for (bn = marked_list.last();
-             bn != 0;
-             bn = marked_list.prev())
+        for (bn = marked_list.last(); bn != 0; bn = marked_list.prev())
             p->move(bn->duplicate(p), this);
     }
         break;

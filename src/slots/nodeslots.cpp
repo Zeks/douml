@@ -161,13 +161,11 @@ void NodeSlots::OnDuplicateMarkedInto()
     }
 }
 
-void NodeSlots::OnDuplicateMarkedAFter()
+void NodeSlots::OnDuplicateMarkedAfter()
 {
     BrowserNode * p = (BrowserNode *) node->parent();
 
-    for (BrowserNode * bn = node->marked_list.last();
-         bn != 0;
-         bn = node->marked_list.prev())
+    for (BrowserNode * bn = node->marked_list.last(); bn != 0; bn = node->marked_list.prev())
         p->move(bn->duplicate(p), node);
 }
 
