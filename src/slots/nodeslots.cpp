@@ -41,6 +41,7 @@
 #include "BrowserView.h"
 #include "tool/ToolCom.h"
 #include "tool/Tool.h"
+#include "tool/privateclass.h"
 
 
 void NodeSlots::OnDeleteItem()
@@ -65,6 +66,24 @@ void NodeSlots::OnUndeleteItem()
 void NodeSlots::OnShowReferencedBy()
 {
     ReferenceDialog::show(node);
+}
+
+void NodeSlots::OnMoveToPrivateClass()
+{
+    QList<BrowserNode*> moveTargets;
+    if(!BrowserNode::get_marked_nodes().isEmpty())
+        moveTargets = BrowserNode::get_marked_nodes();
+    else
+        moveTargets << node;
+    PrivateClassMovePlugin plugin;
+    plugin.createLinkToPublic = QtPrivateSplit::CreateLinkToPublic;
+    plugin.createLinkToPrivate = QtPrivateSplit::CreateLinkToPrivate;
+    plugin.insertPrivateLinkIntoConstructorDefinition = QtPrivateSplit::InsertPrivateLinkIntoConstructorDefinition;
+    plugin.setupPrivateArtifact = QtPrivateSplit::SetupPrivateArtifact;
+    plugin.createPublicClassConstructors = QtPrivateSplit::CreateQtConstructors;
+    plugin.Execute(moveTargets);
+
+    //MoveToPrivate(moveTargets);
 }
 
 

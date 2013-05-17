@@ -85,6 +85,10 @@ public:
     const char * get_cpp_src() const {
         return cpp_src;
     }
+    void set_cpp_src(QString value)
+    {
+        cpp_src = value;
+    }
     void use_default_cpp_h();
     void use_default_cpp_src();
 

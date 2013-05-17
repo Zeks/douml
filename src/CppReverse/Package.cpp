@@ -1239,8 +1239,7 @@ void Package::reverse_variable(const WrapperStr & name)
     int index = name.operator QString().lastIndexOf("::");
     WrapperStr varname;
 
-    if ((index <= 0) ||
-        !find_type(Lex::normalize(name.left(index)), typespec)) {
+    if ((index <= 0) ||!find_type(Lex::normalize(name.left(index)), typespec)) {
         Lex::warn(WrapperStr("<font color =\"red\"> ") + Lex::quote(name) +
                   "</font> is lost");
 #ifdef DEBUG_DOUML

@@ -13,7 +13,8 @@ void add_param(BrowserOperation* oper, QString & form, int rank, QString s)
     if (index == -1)
         return;
 
-    if (rank == 0) {
+    if (rank == 0)
+    {
         // first param, index point to '}' ending ${(}
         OperationData* data = static_cast<OperationData*>(oper->get_data());
         if (data->get_n_params() != 1)

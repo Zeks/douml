@@ -93,7 +93,7 @@ public:
     virtual void DragMoveInsideEvent(QDragMoveEvent * e);
     virtual void DropAfterEvent(QDropEvent * e, BrowserNode * after);
 
-    static BrowserDeploymentView * add_deployment_view(BrowserNode * future_parent);
+    static BrowserDeploymentView * add_deployment_view(BrowserNode * future_parent, QString name = QString(""));
 
     static const QStringList & default_stereotypes();
     static void read_stereotypes(char *& , char *& k);

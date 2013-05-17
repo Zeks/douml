@@ -39,6 +39,7 @@
 #include "translate.h"
 #include "slots/nodeslots.h"
 #include "slots/attributeslots.h"
+#include "tool/privateclass.h"
 
 MenuDispatcher::MenuDispatcher()
 {
@@ -102,6 +103,10 @@ QMenu* AttributeMenu(BrowserNode* node, QList<QMenu*>& menuList)
             nodeMenu->addAction(TR("New set operation"), attr->nodeSlots.get(), SLOT(OnAddSetOperation()))->setParent(nodeMenu);
         if(requiresBothGetAndSetOperations)
             nodeMenu->addAction(TR("New get and set operation"), attr->nodeSlots.get(), SLOT(OnAddGetAndSetOperations()))->setParent(nodeMenu);
+        if(IsPrivateClass(node))
+            nodeMenu->addAction(TR("Move to public class"), attr->nodeSlots.get(), SLOT(OnMoveToPublicClass()))->setParent(nodeMenu);
+        else
+            nodeMenu->addAction(TR("Move to private class"), attr->nodeSlots.get(), SLOT(OnMoveToPrivateClass()))->setParent(nodeMenu);
         if(editable)
             nodeMenu->addAction(TR("Duplicate"), attr->nodeSlots.get(), SLOT(OnDuplicate()))->setParent(nodeMenu);
         nodeMenu->addAction(TR("Referenced by"), attr->nodeSlots.get(), SLOT(OnShowReferencedBy()))->setParent(nodeMenu);

@@ -898,13 +898,13 @@ BrowserArtifact * BrowserArtifact::get_artifact(BrowserNode * future_parent,
     return new BrowserArtifact(name, future_parent);
 }
 
-BrowserArtifact * BrowserArtifact::add_artifact(BrowserNode * future_parent)
+BrowserArtifact * BrowserArtifact::add_artifact(BrowserNode * future_parent, QString name)
 {
-    QString name;
-
-    if (!future_parent->enter_child_name(name, TR("enter artifact's name : "),
+    if(name.isEmpty())
+        if (!future_parent->enter_child_name(name, TR("enter artifact's name : "),
                                          UmlArtifact, TRUE, FALSE))
         return 0;
+
 
     future_parent->setOpen(TRUE);
     future_parent->package_modified();

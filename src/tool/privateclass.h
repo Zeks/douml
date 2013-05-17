@@ -47,13 +47,22 @@ namespace DirectPrivateSplit
 void CreateLinkToPublic(BrowserClass* originClass, BrowserClass* privateClass);
 void CreateLinkToPrivate(BrowserClass* originClass, BrowserClass* privateClass);
 void InsertPrivateLinkIntoConstructorDefinition(BrowserNode* constructor, BrowserNode* privateClass);
-BrowserClass* CreatePrivateClass(BrowserClass* originClass);
 }
-
-bool VerifySingleParent(QList<BrowserNode*>);
+namespace QtPrivateSplit
+{
+void CreateLinkToPublic(BrowserClass* originClass, BrowserClass* privateClass);
+void CreateLinkToPrivate(BrowserClass* originClass, BrowserClass* privateClass);
+void InsertPrivateLinkIntoConstructorDefinition(BrowserNode* constructor, BrowserNode* privateClass);
+void SetupPrivateArtifact(QString className,BrowserArtifact*);
+BrowserOperation* CreateQConstructor(BrowserClass* originClass, BrowserClass* privateClass);
+void CreateQtConstructors(BrowserClass* originClass, BrowserClass* privateClass);
+}
+BrowserClass* CreatePrivateClass(BrowserClass* originClass);
+//bool VerifySingleParent(QList<BrowserNode*>);
 BrowserClass* GetParent(QList<BrowserNode*> nodes);
 QList<BrowserNode*> GetConstructors(BrowserClass* originClass);
-BrowserNode* CreateDefaultConstructor(BrowserClass* originClass);
+BrowserNode* CreateDefaultConstructors(BrowserClass* originClass);
+
 BrowserArtifact* CreatePrivateClassArtifact(BrowserClass* cl);
 BrowserArtifact* CreateDeploymentArtifact(BrowserClass* cl, BrowserDeploymentView* deploymentView);
 BrowserNode* CreateDeploymentView(BrowserClass* cl);
@@ -62,6 +71,7 @@ bool FindPrivate(BrowserClass* originClass, BrowserClass*& privateClass, bool as
 bool FindPublic(BrowserClass* originClass, BrowserClass*& publicClass);
 void MoveToPrivate(QList<BrowserNode*> nodes);
 void MoveToPublic(QList<BrowserNode *> nodes);
+bool IsPrivateClass(BrowserNode *);
 
 
 struct DoumlPluginBase
@@ -88,10 +98,22 @@ struct DoumlNodesPlugin : public DoumlPluginBase
 
 struct PrivateClassMovePlugin : public DoumlNodesPlugin
 {
+public:
+    void Execute(QList<BrowserNode*> nodes);
+private:
+    void MoveToPrivate(QList<BrowserNode*> nodes);
+    bool VerifySingleParent(QList<BrowserNode*>);
+    bool FindPrivate(BrowserClass* originClass, BrowserClass*& privateClass, bool askForNewClass);
+    BrowserClass* CreatePrivateClass(BrowserClass* originClass);
+    void AdjustConstructors(BrowserClass* originClass, BrowserClass* privateClass);
+public:
     std::function<void(BrowserClass* , BrowserClass*)> createLinkToPublic;
     std::function<void(BrowserClass* , BrowserClass*)> createLinkToPrivate;
     std::function<void(BrowserNode* , BrowserNode*)> insertPrivateLinkIntoConstructorDefinition;
-    std::function<BrowserClass*(BrowserClass*)> createPrivateClass;
+    std::function<void(QString className, BrowserArtifact*)> setupPrivateArtifact;
+    std::function<void(BrowserClass*,BrowserClass* )> createPublicClassConstructors;
+
+
 };
 struct PublicClassMovePlugin : public DoumlNodesPlugin
 {
@@ -99,6 +121,7 @@ struct PublicClassMovePlugin : public DoumlNodesPlugin
     std::function<void(BrowserClass* , BrowserClass*)> createLinkToPrivate;
     std::function<void(BrowserNode* , BrowserNode*)> insertPrivateLinkIntoConstructorDefinition;
     std::function<BrowserClass*(BrowserClass*)> createPrivateClass;
+    std::function<void(BrowserClass*)> createPublicClassConstructors;
 };
 
 #endif // PRIVATECLASS_H

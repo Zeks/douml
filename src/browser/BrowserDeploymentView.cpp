@@ -117,15 +117,13 @@ void BrowserDeploymentView::make()
     note_color = UmlDefaultColor;
 }
 
-BrowserDeploymentView * BrowserDeploymentView::add_deployment_view(BrowserNode * future_parent)
+BrowserDeploymentView * BrowserDeploymentView::add_deployment_view(BrowserNode * future_parent, QString name)
 {
-    QString name;
-
-    if (future_parent->enter_child_name(name, TR("enter deployment view's name : "),
+    if (name.isEmpty() && future_parent->enter_child_name(name, TR("enter deployment view's name : "),
                                         UmlDeploymentView, TRUE, FALSE))
-        return new BrowserDeploymentView(name, future_parent);
-    else
         return 0;
+
+    return new BrowserDeploymentView(name, future_parent);
 }
 
 void BrowserDeploymentView::clear(bool old)

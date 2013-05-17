@@ -79,9 +79,15 @@ public:
     const char * get_cpp_decl() const {
         return cpp_decl;
     };
+    void set_cpp_decl(QString value) {
+        cpp_decl = value;
+    }
     const char * get_cpp_def() const {
         return cpp_def;
     };
+    void set_cpp_def(QString value) {
+        cpp_def = value;
+    }
     bool get_cpp_inline() const {
         return cpp_inline;
     };

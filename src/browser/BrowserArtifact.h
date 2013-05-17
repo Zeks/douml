@@ -110,7 +110,7 @@ public:
     static BrowserNodeList & instances(BrowserNodeList &, const char * st = 0);
     static BrowserArtifact * get_artifact(BrowserNode * future_parent,
                                           bool existing = FALSE);
-    static BrowserArtifact * add_artifact(BrowserNode * future_parent);
+    static BrowserArtifact * add_artifact(BrowserNode * future_parent, QString name = QString(""));
     static BrowserArtifact * find(const char * s);
 
     static void clear(bool old);
