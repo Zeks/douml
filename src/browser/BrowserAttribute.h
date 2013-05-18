@@ -61,12 +61,13 @@ protected:
     BrowserAttribute(int id);
 
     void exec_menu_choice(int rank);
-    virtual NodeSlots* NewSlotsObject();
+
 
 public:
     BrowserAttribute(QString s, BrowserNode * p, AttributeData * d, int id = 0);
     BrowserAttribute(const BrowserAttribute * model, BrowserNode * p);
     virtual ~BrowserAttribute();
+    virtual NodeSlots* NewSlotsObject();
     uint TypeID() override;
     virtual void delete_it();
     virtual BrowserNode * duplicate(BrowserNode * p,

@@ -49,6 +49,14 @@
 #include "tool/ToolCom.h"
 #include "tool/Tool.h"
 
+OperationSlots::OperationSlots(QObject *parent) : NodeSlots(parent)
+{
+
+}
+
+OperationSlots::~OperationSlots()
+{
+}
 
 void OperationSlots::OnDuplicate()
 {
@@ -64,31 +72,35 @@ void OperationSlots::OnEditConstructorInitializer()
 
 void OperationSlots::OnEditCppBody()
 {
-
+    BrowserOperation* operationNode = static_cast<BrowserOperation*>(node);
     operationNode->def->edit(CppView);
     SetModified();
 }
 
 void OperationSlots::OnEditJavaBody()
 {
+    BrowserOperation* operationNode = static_cast<BrowserOperation*>(node);
     operationNode->def->edit(JavaView);
     SetModified();
 }
 
 void OperationSlots::OnEditPhpBody()
 {
+    BrowserOperation* operationNode = static_cast<BrowserOperation*>(node);
     operationNode->def->edit(PhpView);
     SetModified();
 }
 
 void OperationSlots::OnEditPythonBody()
 {
+    BrowserOperation* operationNode = static_cast<BrowserOperation*>(node);
     operationNode->def->edit(PythonView);
     SetModified();
 }
 
 void OperationSlots::OnAddImplementingActivity()
 {
+    BrowserOperation* operationNode = static_cast<BrowserOperation*>(node);
     BrowserNode * bn = node;
 
     do {
@@ -107,6 +119,7 @@ void OperationSlots::OnAddImplementingActivity()
 
 void OperationSlots::OnAddImplementingState()
 {
+    BrowserOperation* operationNode = static_cast<BrowserOperation*>(node);
     BrowserNode * bn = node;
 
     do {
@@ -124,17 +137,11 @@ void OperationSlots::OnAddImplementingState()
 }
 
 
-OperationSlots::OperationSlots(QObject *parent) : NodeSlots(parent)
-{
-    operationNode = static_cast<BrowserOperation*>(node);
-}
 
-OperationSlots::~OperationSlots()
-{
-}
 
 void OperationSlots::SetModified()
 {
+    BrowserOperation* operationNode = static_cast<BrowserOperation*>(node);
     ((BrowserNode *) operationNode->parent())->modified();
     operationNode->package_modified();
 }
@@ -142,6 +149,7 @@ void OperationSlots::SetModified()
 
 void OperationSlots::OnExecuteBehaviourSlot()
 {
+    BrowserOperation* operationNode = static_cast<BrowserOperation*>(node);
     Q3PtrList<BrowserNode> ImplBy;
     BrowserActivity::compute_referenced_by(ImplBy, operationNode);
     BrowserState::compute_referenced_by(ImplBy, operationNode);

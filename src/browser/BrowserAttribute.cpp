@@ -67,6 +67,7 @@ BrowserAttribute::BrowserAttribute(QString s, BrowserNode * p, AttributeData * d
     : BrowserNode(s, p), Labeled<BrowserAttribute>(all, id),
       def(d), get_oper(0), set_oper(0)
 {
+    InstallNewSlotsObject(GetSlotsObject(TypeIdentifier<BrowserAttribute>::id()));
 }
 
 BrowserAttribute::BrowserAttribute(int id)
@@ -81,6 +82,8 @@ BrowserAttribute::BrowserAttribute(const BrowserAttribute * model, BrowserNode *
     : BrowserNode(model->name, p), Labeled<BrowserAttribute>(all, 0),
       get_oper(0), set_oper(0)
 {
+
+    InstallNewSlotsObject(GetSlotsObject(TypeIdentifier<BrowserAttribute>::id()));
     def = new AttributeData(model->def, this);
     comment = model->comment;
 }

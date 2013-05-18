@@ -51,5 +51,5 @@ BIND_TO_SELF_SINGLE(MenuDispatcher);
 
 
 QMenu* AttributeMenu(BrowserNode* node, QList<QMenu*>&);
-
+QMenu* OperationMenu(BrowserNode* node, QList<QMenu*>& );
 #endif // MENUDISPATCHER_H

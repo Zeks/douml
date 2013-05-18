@@ -46,6 +46,7 @@
 #include "Editable.h"
 #include "AType.h"
 #include "misc/TypeIdentifier.h"
+#include "slots/slotsdispatcher.h"
 class QDragMoveEvent;
 class Q3PopupMenu;
 template <class K> class Q3PtrDict;
@@ -123,6 +124,7 @@ public:
     virtual ~BrowserNode();
     std::unique_ptr<NodeSlots> nodeSlots;
     virtual NodeSlots* NewSlotsObject();
+    void InstallNewSlotsObject(NodeSlots* obj);
     void MoveNodes(Q3PtrList<BrowserNode> nodeList, BrowserNode* destination, BrowserNode *actionSource);
 
     virtual bool is_undefined() const;

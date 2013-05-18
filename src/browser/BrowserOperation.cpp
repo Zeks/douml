@@ -83,7 +83,7 @@ BrowserOperation::BrowserOperation(int id)
     : BrowserNode(), Labeled<BrowserOperation>(all, id),
       def(new OperationData(id)), get_of(0), set_of(0)
 {
-    // not yet read
+    InstallNewSlotsObject(GetSlotsObject(TypeIdentifier<BrowserOperation>::id()));
 }
 
 NodeSlots *BrowserOperation::NewSlotsObject()
@@ -95,12 +95,14 @@ BrowserOperation::BrowserOperation(QString s, BrowserNode * p, OperationData * d
     : BrowserNode(s, p), Labeled<BrowserOperation>(all, id), def(d),
       get_of(0), set_of(0)
 {
+    InstallNewSlotsObject(GetSlotsObject(TypeIdentifier<BrowserOperation>::id()));
 }
 
 BrowserOperation::BrowserOperation(const BrowserOperation * model, BrowserNode * p)
     : BrowserNode(model->name, p),
       Labeled<BrowserOperation>(all, 0), get_of(0), set_of(0)
 {
+    InstallNewSlotsObject(GetSlotsObject(TypeIdentifier<BrowserOperation>::id()));
     def = new OperationData(model->def, this);
     comment = model->comment;
 
@@ -596,108 +598,6 @@ static Q3PtrList<BrowserNode> ImplBy;
 static const int add_constructor_initializer = 35;
 static const int go_up = 36;
 
-void BrowserOperation::menu()
-{
-    Q3PopupMenu m(0, name);
-    Q3PopupMenu implbym(0);
-    Q3PopupMenu toolm(0);
-
-    MenuFactory::createTitle(m, def->definition(FALSE, TRUE));
-    m.insertSeparator();
-
-    if (!deletedp()) {
-        if (!is_edited) {
-            if (get_container(UmlClass) != 0)
-                m.setWhatsThis(m.insertItem(TR("Up"), go_up),
-                               TR("to return to parent node"));
-
-            QString nameOfNode = ((BrowserNode *) parent())->get_name();
-            if(name == nameOfNode)
-                MenuFactory::addItem(m, TR("Add constructor initializer"),
-                                     add_constructor_initializer,
-                                     TR("to edit the <i>operation</i>,"
-                                        "a double click with the left mouse button does the same thing"));
-
-
-
-            m.setWhatsThis(m.insertItem(TR("Edit"), 0),
-                           TR("to edit the <i>operation</i>,"
-                              "a double click with the left mouse button does the same thing"));
-
-            if (GenerationSettings::cpp_get_default_defs() && (strstr(def->get_cppdef(), "${body}") != 0))
-                m.setWhatsThis(m.insertItem(TR("Edit C++ body"), 4),
-                               TR("to edit the <i>operation</i> and its C++ body"));
-
-            if (GenerationSettings::java_get_default_defs() &&  (strstr(def->get_javadef(), "${body}") != 0))
-                m.setWhatsThis(m.insertItem(TR("Edit Java body"), 5),
-                               TR("to edit the <i>operation</i> and its Java body"));
-
-            if (GenerationSettings::php_get_default_defs() &&  (strstr(def->get_phpdef(), "${body}") != 0))
-                m.setWhatsThis(m.insertItem(TR("Edit Php body"), 6),
-                               TR("to edit the <i>operation</i> and its Php body"));
-
-            if (GenerationSettings::python_get_default_defs() &&  (strstr(def->get_pythondef(), "${body}") != 0))
-                m.setWhatsThis(m.insertItem(TR("Edit Python body"), 7),
-                               TR("to edit the <i>operation</i> and its Python body"));
-
-            if (((BrowserClass *) parent())->is_writable()) {
-                if ((get_of == 0) && (set_of == 0))
-                    m.setWhatsThis(m.insertItem(TR("Duplicate"), 1),
-                                   TR("to copy the <i>operation</i> in a new one"));
-
-                m.setWhatsThis(m.insertItem(TR("Add implementing activity"), 9),
-                               TR("to add a new <i>activity</i> implementing the <i>operation</i>"));
-                m.setWhatsThis(m.insertItem(TR("Add implementing state"), 10),
-                               TR("to add a new <i>state</i> implementing the <i>operation</i>"));
-            }
-
-            m.insertSeparator();
-            m.setWhatsThis(m.insertItem(TR("Referenced by"), 8),
-                           TR("to know who reference the <i>operation</i>"));
-
-            ImplBy.clear();
-            BrowserActivity::compute_referenced_by(ImplBy, this);
-            BrowserState::compute_referenced_by(ImplBy, this);
-
-            if (! ImplBy.isEmpty()) {
-                m.setWhatsThis(m.insertItem(TR("Select implementing behavior"), &implbym),
-                               TR("to select a <i>state</i> or <i>activity</i> implementing the <i>operation</i>"));
-
-                MenuFactory::createTitle(implbym, TR("Choose behavior"));
-                implbym.insertSeparator();
-
-                BrowserNode * beh;
-                int rank = 10000;
-
-                for (beh = ImplBy.first(); beh != 0; beh = ImplBy.next())
-                    implbym.insertItem(beh->full_name(TRUE), rank);
-            }
-
-            if (!is_read_only && (edition_number == 0)) {
-                m.insertSeparator();
-                m.setWhatsThis(m.insertItem(TR("Delete"), 2),
-                               TR("to delete the <i>operation</i>. \
-                                  Note that you can undelete it after"));
-            }
-        }
-
-        mark_menu(m, TR("the operation"), 90);
-        ProfiledStereotypes::menu(m, this, 99990);
-
-        if ((edition_number == 0) &&
-                Tool::menu_insert(&toolm, get_type(), 100)) {
-            m.insertSeparator();
-            m.insertItem(TR("Tool"), &toolm);
-        }
-    }
-    else if (!is_read_only && (edition_number == 0) &&
-             ((get_of == 0) || !get_of->deletedp()) &&
-             ((set_of == 0) || !set_of->deletedp()))
-        m.setWhatsThis(m.insertItem(TR("Undelete"), 3),
-                       TR("to undelete the <i>operation</i>"));
-
-    exec_menu_choice(m.exec(QCursor::pos()));
-}
 
 void BrowserOperation::exec_menu_choice(int rank)
 {
@@ -1239,4 +1139,10 @@ BrowserOperation * BrowserOperation::read(char *& st, char * k,
 BrowserNode * BrowserOperation::get_it(const char * k, int id)
 {
     return (!strcmp(k, "operation_ref")) ? all[id] : 0;
+}
+
+
+int BrowserOperation::GetToolMenuBase()
+{
+    return 100;
 }

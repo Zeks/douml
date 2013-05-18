@@ -58,14 +58,14 @@ protected:
 
 protected:
     BrowserOperation(int id);
-    virtual NodeSlots* NewSlotsObject();
+
     void exec_menu_choice(int rank);
 
 public:
     BrowserOperation(QString s, BrowserNode * p, OperationData * d, int id = 0);
     BrowserOperation(const BrowserOperation * model, BrowserNode * p);
     virtual ~BrowserOperation();
-
+    virtual NodeSlots* NewSlotsObject();
     virtual bool undelete(bool rec, QString & warning, QString & renamed);
     virtual BrowserNode * duplicate(BrowserNode * p,
                                     QString name = QString());
@@ -97,7 +97,7 @@ public:
     virtual const QPixmap * pixmap(int) const;
     virtual void paintCell(QPainter *, const QColorGroup &, int, int, int);
 
-    virtual void menu();
+    //virtual void menu();
     virtual void apply_shortcut(QString s);
     virtual void open(bool);
     virtual UmlCode get_type() const;
@@ -146,6 +146,7 @@ public:
     static void read_stereotypes(char *& , char *& k);
     static void save_stereotypes(QTextStream &);
     void AddConstructorInitalizer();
+    virtual int GetToolMenuBase();
 protected:
     virtual bool delete_internal(QString & warning);
 

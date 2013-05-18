@@ -109,18 +109,19 @@ QString BrowserNode::FullPathDotDot = "::";
 BrowserView* BrowserNode::viewptr = 0;
 BrowserNode::BrowserNode(QString s, BrowserView * parent)
     : Q3ListViewItem(parent, s),
-      name(s), nodeSlots(NewSlotsObject())
+      name(s)/*, nodeSlots(NewSlotsObject())*/
 {
-    nodeSlots->SetOrigin(this);
+    InstallNewSlotsObject(GetSlotsObject(TypeIdentifier<BrowserNode>::id()));
     viewptr = parent;
 }
 
 BrowserNode::BrowserNode(QString s, BrowserNode * parent)
     : Q3ListViewItem(parent, s),
-      name(s), nodeSlots(NewSlotsObject())
+      name(s)/*, nodeSlots(NewSlotsObject())*/
 {
 
-    nodeSlots->SetOrigin(this);
+    InstallNewSlotsObject(GetSlotsObject(TypeIdentifier<BrowserNode>::id()));
+
     // move it at end
     Q3ListViewItem * child = parent->firstChild();
 
@@ -132,15 +133,15 @@ BrowserNode::BrowserNode(QString s, BrowserNode * parent)
 }
 
 BrowserNode::BrowserNode()
-    : Q3ListViewItem(UndefinedNodePackage, "<not yet read>"), nodeSlots(NewSlotsObject())
+    : Q3ListViewItem(UndefinedNodePackage, "<not yet read>")/*, nodeSlots(NewSlotsObject())*/
 {
-    nodeSlots->SetOrigin(this);
+    InstallNewSlotsObject(GetSlotsObject(TypeIdentifier<BrowserNode>::id()));
 }
 
 BrowserNode::BrowserNode(Q3ListView * view)
-    : Q3ListViewItem(view, "<not yet read>"), nodeSlots(NewSlotsObject())
+    : Q3ListViewItem(view, "<not yet read>")/*, nodeSlots(NewSlotsObject())*/
 {
-    nodeSlots->SetOrigin(this);
+    InstallNewSlotsObject(GetSlotsObject(TypeIdentifier<BrowserNode>::id()));
 }
 
 BrowserNode::~BrowserNode()
@@ -152,6 +153,12 @@ BrowserNode::~BrowserNode()
 NodeSlots* BrowserNode::NewSlotsObject()
 {
     return new NodeSlots();
+}
+
+void BrowserNode::InstallNewSlotsObject(NodeSlots *obj)
+{
+    nodeSlots.reset(obj);
+    nodeSlots->SetOrigin(this);
 }
 
 void BrowserNode::MoveNodes(Q3PtrList<BrowserNode> nodeList, BrowserNode *destination, BrowserNode *actionSource)
@@ -1107,7 +1114,7 @@ void BrowserNode::mark_menu(Q3PopupMenu & m, const char * s, int bias) const
 
 void BrowserNode::markMenu(QMenu* originMenu)
 {
-    QString markText = is_marked ? TR("Mark") : TR("Unmark");
+    QString markText = !is_marked ? TR("Mark") : TR("Unmark");
     originMenu->addAction(markText, nodeSlots.get(), SLOT(OnMarkCurrentItem()))->setParent(originMenu);
     if(!marked_list.isEmpty())
         originMenu->addAction(TR("Unmark all"), nodeSlots.get(), SLOT(OnUnmarkAllItems()))->setParent(originMenu);

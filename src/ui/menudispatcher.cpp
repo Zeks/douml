@@ -41,6 +41,7 @@
 #include "translate.h"
 #include "slots/nodeslots.h"
 #include "slots/attributeslots.h"
+#include "slots/operationslots.h"
 #include "tool/privateclass.h"
 #include "GenerationSettings.h"
 #include "BrowserActivity.h"
@@ -49,6 +50,7 @@
 MenuDispatcher::MenuDispatcher()
 {
     AddMenu(TypeIdentifier<BrowserAttribute>::id(), AttributeMenu);
+    AddMenu(TypeIdentifier<BrowserOperation>::id(), OperationMenu);
 }
 
 MenuDispatcher::~MenuDispatcher()
@@ -75,8 +77,11 @@ void MenuDispatcher::DeleteLastMenu()
 {
     for(auto& menu : lastMenus)
     {
-        delete menu;
-        menu = nullptr;
+        if(menu)
+        {
+            delete menu;
+            menu = nullptr;
+        }
     }
     lastMenus.clear();
 }
@@ -132,7 +137,7 @@ QMenu* AttributeMenu(BrowserNode* node, QList<QMenu*>& menuList)
             toolMenu->setTitle(TR("Tools"));
             nodeMenu->addMenu(toolMenu);
             nodeMenu->addSeparator();
-            menuList << toolMenu;
+            //menuList << toolMenu;
         }
      }
     else
@@ -147,9 +152,8 @@ QMenu* OperationMenu(BrowserNode* node, QList<QMenu*>& menuList)
     QMenu* nodeMenu = new QMenu();
     menuList << nodeMenu;
     Q3PtrList<BrowserNode> ImplBy;
-    QString stereotype = QString(((BrowserClass *) oper->parent())->get_stereotype());
-    bool item = ((stereotype == "enum_pattern" || stereotype == "enum") && QString(oper->get_stereotype()) == "attribute");
     MenuFactory::createTitle(*nodeMenu, oper->def->definition(FALSE, TRUE));
+    OperationSlots* operSlots = qobject_cast<OperationSlots*>(oper->nodeSlots.get());
     nodeMenu->insertSeparator();
 
     if (!oper->deletedp())
@@ -158,23 +162,28 @@ QMenu* OperationMenu(BrowserNode* node, QList<QMenu*>& menuList)
             nodeMenu->addAction(TR("Up"), oper->nodeSlots.get(), SLOT(OnGoUpOneLevel()))->setParent(nodeMenu);
 
         nodeMenu->addAction(TR("Edit"), oper->nodeSlots.get(), SLOT(OnEdit()))->setParent(nodeMenu);
-        nodeMenu->addAction(TR("Add constructor initializer"), oper->nodeSlots.get(), SLOT(OnEditConstructorInitializer()))->setParent(nodeMenu);
+        nodeMenu->addAction(TR("Add constructor initializer"), operSlots, SLOT(OnEditConstructorInitializer()))->setParent(nodeMenu);
+        if(IsPrivateClass(node))
+            nodeMenu->addAction(TR("Move to public class"), oper->nodeSlots.get(), SLOT(OnMoveToPublicClass()))->setParent(nodeMenu);
+        else
+            nodeMenu->addAction(TR("Move to private class"), oper->nodeSlots.get(), SLOT(OnMoveToPrivateClass()))->setParent(nodeMenu);
+
 
 
         if (GenerationSettings::cpp_get_default_defs() && (strstr(oper->def->get_cppdef(), "${body}") != 0))
-            nodeMenu->addAction(TR("Edit C++ Body"), oper->nodeSlots.get(), SLOT(OnEditCppBody()))->setParent(nodeMenu);
+            nodeMenu->addAction(TR("Edit C++ Body"), operSlots, SLOT(OnEditCppBody()))->setParent(nodeMenu);
         if (GenerationSettings::java_get_default_defs() &&  (strstr(oper->def->get_javadef(), "${body}") != 0))
-            nodeMenu->addAction(TR("Edit Java Body"), oper->nodeSlots.get(), SLOT(OnEditJavaBody()))->setParent(nodeMenu);
+            nodeMenu->addAction(TR("Edit Java Body"), operSlots, SLOT(OnEditJavaBody()))->setParent(nodeMenu);
         if (GenerationSettings::php_get_default_defs() &&  (strstr(oper->def->get_phpdef(), "${body}") != 0))
-            nodeMenu->addAction(TR("Edit Php Body"), oper->nodeSlots.get(), SLOT(OnEditPhpBody()))->setParent(nodeMenu);
+            nodeMenu->addAction(TR("Edit Php Body"), operSlots, SLOT(OnEditPhpBody()))->setParent(nodeMenu);
         if (GenerationSettings::python_get_default_defs() &&  (strstr(oper->def->get_pythondef(), "${body}") != 0))
-            nodeMenu->addAction(TR("Edit Python Body"), oper->nodeSlots.get(), SLOT(OnEditPythonBody()))->setParent(nodeMenu);
+            nodeMenu->addAction(TR("Edit Python Body"), operSlots, SLOT(OnEditPythonBody()))->setParent(nodeMenu);
 
 
         if (((BrowserClass *)node->parent())->is_writable())
         {
-                nodeMenu->addAction(TR("Add implementing activity"), oper->nodeSlots.get(), SLOT(OnAddImplementingActivity()))->setParent(nodeMenu);
-                nodeMenu->addAction(TR("Add implementing state"), oper->nodeSlots.get(), SLOT(OnAddImplementingState()))->setParent(nodeMenu);
+                nodeMenu->addAction(TR("Add implementing activity"), operSlots, SLOT(OnAddImplementingActivity()))->setParent(nodeMenu);
+                nodeMenu->addAction(TR("Add implementing state"), operSlots, SLOT(OnAddImplementingState()))->setParent(nodeMenu);
         }
 
         nodeMenu->addSeparator();
@@ -188,7 +197,7 @@ QMenu* OperationMenu(BrowserNode* node, QList<QMenu*>& menuList)
         if (!ImplBy.isEmpty())
         {
             QMenu* behaviourMenu = nodeMenu->addMenu(TR("Select implementing behavior"));
-            menuList << behaviourMenu;
+            //menuList << behaviourMenu;
             MenuFactory::createTitle(*behaviourMenu, TR("Choose behavior"));
 
             behaviourMenu->addSeparator();
@@ -198,7 +207,7 @@ QMenu* OperationMenu(BrowserNode* node, QList<QMenu*>& menuList)
 
             for (beh = ImplBy.first(); beh != 0; beh = ImplBy.next())
             {
-                QAction* behAction = behaviourMenu->addAction(beh->full_name(TRUE), oper->nodeSlots.get(),SLOT(OnExecuteBehaviourSlot()));
+                QAction* behAction = behaviourMenu->addAction(beh->full_name(TRUE), operSlots,SLOT(OnExecuteBehaviourSlot()));
                 behAction->setData(rank);
             }
         }
@@ -208,20 +217,13 @@ QMenu* OperationMenu(BrowserNode* node, QList<QMenu*>& menuList)
 
 
         bool editable = oper->is_read_only && (oper->edition_number == 0);
-        if(IsPrivateClass(node))
-            nodeMenu->addAction(TR("Move to public class"), oper->nodeSlots.get(), SLOT(OnMoveToPublicClass()))->setParent(nodeMenu);
-        else
-            nodeMenu->addAction(TR("Move to private class"), oper->nodeSlots.get(), SLOT(OnMoveToPrivateClass()))->setParent(nodeMenu);
 
-        nodeMenu->addAction(TR("Referenced by"), oper->nodeSlots.get(), SLOT(OnShowReferencedBy()))->setParent(nodeMenu);
+        //nodeMenu->addAction(TR("Referenced by"), oper->nodeSlots.get(), SLOT(OnShowReferencedBy()))->setParent(nodeMenu);
         if(editable)
         {
             nodeMenu->insertSeparator();
             nodeMenu->addAction(TR("Delete"), oper->nodeSlots.get(), SLOT(OnDeleteItem()))->setParent(nodeMenu);
         }
-
-        oper->markMenu(nodeMenu);
-
         nodeMenu->insertSeparator();
         oper->markMenu(nodeMenu);
         An<ProfiledStereotypes>()->Menu(nodeMenu, oper);
@@ -234,7 +236,7 @@ QMenu* OperationMenu(BrowserNode* node, QList<QMenu*>& menuList)
             toolMenu->setTitle(TR("Tools"));
             nodeMenu->addMenu(toolMenu);
             nodeMenu->addSeparator();
-            menuList << toolMenu;
+            //menuList << toolMenu;
         }
      }
     else if(!oper->is_read_only && (oper->edition_number == 0) && ((oper->get_of == 0) || !oper->get_of->deletedp()) && ((oper->set_of == 0) || !oper->set_of->deletedp()))

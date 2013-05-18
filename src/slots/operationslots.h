@@ -39,7 +39,7 @@ class OperationSlots : public NodeSlots
     public:
     OperationSlots(QObject* parent = nullptr);
     ~OperationSlots();
-    BrowserOperation* operationNode = nullptr;
+
 private:
     void SetModified();
 
@@ -55,7 +55,6 @@ public slots:
     void OnAddImplementingActivity();
     void OnAddImplementingState();
 
-    //void OnShowReferencedBy();
     void OnExecuteBehaviourSlot();
 
 };
