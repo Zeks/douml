@@ -94,14 +94,14 @@ struct DoumlNodesPlugin : public DoumlPluginBase
 {
     std::function<void(QList<BrowserNode*>)> action;
 };
-
+bool VerifySingleParent(QList<BrowserNode*>);
 struct PrivateClassMovePlugin : public DoumlNodesPlugin
 {
 public:
     void Execute(QList<BrowserNode*> nodes);
 private:
     void MoveToPrivate(QList<BrowserNode*> nodes);
-    bool VerifySingleParent(QList<BrowserNode*>);
+
     bool FindPrivate(BrowserClass* originClass, BrowserClass*& privateClass, bool askForNewClass);
     BrowserClass* CreatePrivateClass(BrowserClass* originClass);
     void AdjustConstructors(BrowserClass* originClass, BrowserClass* privateClass);
@@ -116,11 +116,17 @@ public:
 };
 struct PublicClassMovePlugin : public DoumlNodesPlugin
 {
-    std::function<void(BrowserClass* , BrowserClass*)> createLinkToPublic;
-    std::function<void(BrowserClass* , BrowserClass*)> createLinkToPrivate;
-    std::function<void(BrowserNode* , BrowserNode*)> insertPrivateLinkIntoConstructorDefinition;
-    std::function<BrowserClass*(BrowserClass*)> createPrivateClass;
-    std::function<void(BrowserClass*)> createPublicClassConstructors;
+public:
+    void Execute(QList<BrowserNode*> nodes);
+private:
+    //bool VerifySingleParent(QList<BrowserNode*>);
+    void MoveToPublic(QList<BrowserNode*> nodes);
+    bool FindPublic(BrowserClass* originClass, BrowserClass*& publicClass);
+//    std::function<void(BrowserClass* , BrowserClass*)> createLinkToPublic;
+//    std::function<void(BrowserClass* , BrowserClass*)> createLinkToPrivate;
+//    std::function<void(BrowserNode* , BrowserNode*)> insertPrivateLinkIntoConstructorDefinition;
+//    std::function<BrowserClass*(BrowserClass*)> createPrivateClass;
+//    std::function<void(BrowserClass*)> createPublicClassConstructors;
 };
 
 #endif // PRIVATECLASS_H

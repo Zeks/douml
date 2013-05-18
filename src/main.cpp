@@ -111,6 +111,7 @@ int main(int argc, char ** argv)
       {
         settings_path.mkpath(settings_path.absolutePath());
       }
+
       QFile settings_file(settings_info.absoluteFilePath());
       settings_file.open(QIODevice::WriteOnly);
       QByteArray data((const char *)settings_ini, settings_ini_len);

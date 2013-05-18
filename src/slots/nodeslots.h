@@ -55,6 +55,7 @@ public slots:
     void OnUndeleteItem();
     void OnShowReferencedBy();
     void OnMoveToPrivateClass();
+    void OnMoveToPublicClass();
 
 };
 

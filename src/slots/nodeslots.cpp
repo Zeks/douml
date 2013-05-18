@@ -82,8 +82,17 @@ void NodeSlots::OnMoveToPrivateClass()
     plugin.setupPrivateArtifact = QtPrivateSplit::SetupPrivateArtifact;
     plugin.createPublicClassConstructors = QtPrivateSplit::CreateQtConstructors;
     plugin.Execute(moveTargets);
+}
 
-    //MoveToPrivate(moveTargets);
+void NodeSlots::OnMoveToPublicClass()
+{
+    QList<BrowserNode*> moveTargets;
+    if(!BrowserNode::get_marked_nodes().isEmpty())
+        moveTargets = BrowserNode::get_marked_nodes();
+    else
+        moveTargets << node;
+    PublicClassMovePlugin plugin;
+    plugin.Execute(moveTargets);
 }
 
 
