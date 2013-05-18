@@ -220,7 +220,7 @@ public:
     virtual QString full_name(bool rev = FALSE, bool itself = TRUE) const;
     QString fullname(bool rev) const;
     QString fullname(QString & s, bool rev) const;
-    virtual void menu() = 0;
+    virtual void menu();
     virtual void apply_shortcut(QString s) = 0;
     /* Open a Diagram Window */
     virtual const QPixmap * pixmap(int) const{return 0;}
@@ -353,6 +353,8 @@ inline QString BrowserNode::fullname(QString & s, bool rev) const
     else
         return p + (FullPathDotDot + s);
 }
+
+
 
 // a sortable list of BrowserNode
 

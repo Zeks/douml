@@ -243,7 +243,8 @@ HEADERS        = \
     ui/menudispatcher.h \
     slots/nodeSlots->h \
     slots/nodeslots.h \
-    slots/attributeslots.h
+    slots/attributeslots.h \
+    slots/operationslots.h
 
 
 SOURCES = \
@@ -534,7 +535,8 @@ SOURCES = \
     tool/privateclass.cpp \
     ui/menudispatcher.cpp \
     slots/nodeSlots.cpp \
-    slots/attributeslots.cpp
+    slots/attributeslots.cpp \
+    slots/operationslots.cpp
 
 TARGET = douml
 DEFINES = BooL=bool DEBUGCOM

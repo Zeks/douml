@@ -45,6 +45,8 @@ class BrowserOperation : public BrowserNode, public Labeled<BrowserOperation>
     friend class StereotypesDialog;
     friend class BrowserOperationAttribute;
     friend class QuickEdit;
+    friend class OperationSlots;
+    friend QMenu* OperationMenu(BrowserNode* node, QList<QMenu*>&);
 
 protected:
     static IdDict<BrowserOperation> all;
@@ -56,7 +58,7 @@ protected:
 
 protected:
     BrowserOperation(int id);
-
+    virtual NodeSlots* NewSlotsObject();
     void exec_menu_choice(int rank);
 
 public:
@@ -143,11 +145,11 @@ public:
     static const QStringList & default_stereotypes();
     static void read_stereotypes(char *& , char *& k);
     static void save_stereotypes(QTextStream &);
-
+    void AddConstructorInitalizer();
 protected:
     virtual bool delete_internal(QString & warning);
 
-    void AddConstructorInitalizer();
+
 };
 extern bool CompareAgainstTag(QString & currentTag, QString tagToCompare, const char * p);
 extern bool insert_template(const QString & tm, const char *& p, QString & s, const QString & indent);

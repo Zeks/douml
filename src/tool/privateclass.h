@@ -39,7 +39,6 @@ class BrowserNode;
 class BrowserClass;
 class BrowserOperation;
 class BrowserArtifact;
-class BrowserArtifact;
 class BrowserDeploymentView;
 class BrowserPackage;
 namespace DirectPrivateSplit
@@ -58,14 +57,14 @@ BrowserOperation* CreateQConstructor(BrowserClass* originClass, BrowserClass* pr
 void CreateQtConstructors(BrowserClass* originClass, BrowserClass* privateClass);
 }
 BrowserClass* CreatePrivateClass(BrowserClass* originClass);
-//bool VerifySingleParent(QList<BrowserNode*>);
 BrowserClass* GetParent(QList<BrowserNode*> nodes);
 QList<BrowserNode*> GetConstructors(BrowserClass* originClass);
 BrowserNode* CreateDefaultConstructors(BrowserClass* originClass);
 
-BrowserArtifact* CreatePrivateClassArtifact(BrowserClass* cl);
+BrowserArtifact* CreateArtifact(BrowserClass* cl, QString deploymentName);
 BrowserArtifact* CreateDeploymentArtifact(BrowserClass* cl, BrowserDeploymentView* deploymentView);
-BrowserNode* CreateDeploymentView(BrowserClass* cl);
+BrowserNode* CreateDeploymentView(BrowserClass* cl, QString deploymentName = QString(""));
+BrowserDeploymentView* GetDeploymentViewForClass(BrowserClass* node, QString deploymentViewName = QString(""));
 bool RequestNewPrivateClass();
 bool FindPrivate(BrowserClass* originClass, BrowserClass*& privateClass, bool askForNewClass);
 bool FindPublic(BrowserClass* originClass, BrowserClass*& publicClass);

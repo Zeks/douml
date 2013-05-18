@@ -189,6 +189,8 @@ public:
     void update_lib();
 
     static void prepare_for_sort();
-};
 
+    friend QList<BrowserNode*> GetDeploymentNodes(QString name);
+};
+QList<BrowserNode*> GetDeploymentNodes(BrowserPackage* package, QString name = QString(""));
 #endif

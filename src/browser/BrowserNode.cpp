@@ -81,6 +81,7 @@
 #include "tool/Tool.h"
 #include "../Logging/QsLog.h"
 #include "slots/nodeSlots.h"
+#include "menudispatcher.h"
 
 QList<UmlCode> BrowserNode::generatable_types;
 Q3PtrList<BrowserNode> BrowserNode::marked_list;
@@ -2251,3 +2252,9 @@ void BrowserNodeList::full_defs(QStringList & list) const
     }
 }
 
+void BrowserNode::menu()
+{
+    An<MenuDispatcher> dispatcher;
+    QMenu* menu = dispatcher->GetMenu(this->TypeID(), this);
+    menu->popup(QCursor::pos());
+}

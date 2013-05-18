@@ -89,7 +89,7 @@ public:
     virtual void paintCell(QPainter *, const QColorGroup &, int, int, int);
 
     //virtual void menu();
-    virtual void menu();
+    //virtual void menu();
     virtual void apply_shortcut(QString s);
     virtual void open(bool);
     void open_new_ste_attr();

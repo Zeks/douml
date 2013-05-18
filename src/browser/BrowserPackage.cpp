@@ -3225,3 +3225,17 @@ void BrowserPackage::renumber(int phase)
     }
     }
 }
+
+
+QList<BrowserNode *> GetDeploymentNodes(BrowserPackage* package, QString name)
+{
+    QList<BrowserNode *> result;
+    for (BrowserNode * child =static_cast<BrowserNode*>( package->firstChild()); child != 0; child = static_cast<BrowserNode*>(child->nextSibling()))
+    {
+        if(child->get_type() != UmlDeploymentView)
+            continue;
+        if(name.isEmpty() || child->get_name() == name)
+            result << child;
+    }
+    return result;
+}

@@ -72,6 +72,7 @@
 #include "tagmanagement/cpptagmanagement.h"
 #include "ui/constructorinitializerdialog.h"
 #include "ui/ui_constructorinitializerdialog.h"
+#include "slots/operationslots.h"
 
 IdDict<BrowserOperation> BrowserOperation::all(1021, __FILE__);
 QStringList BrowserOperation::its_default_stereotypes;	// unicode
@@ -83,6 +84,11 @@ BrowserOperation::BrowserOperation(int id)
       def(new OperationData(id)), get_of(0), set_of(0)
 {
     // not yet read
+}
+
+NodeSlots *BrowserOperation::NewSlotsObject()
+{
+    return new OperationSlots();
 }
 
 BrowserOperation::BrowserOperation(QString s, BrowserNode * p, OperationData * d, int id)
@@ -618,23 +624,19 @@ void BrowserOperation::menu()
                            TR("to edit the <i>operation</i>,"
                               "a double click with the left mouse button does the same thing"));
 
-            if (GenerationSettings::cpp_get_default_defs() &&
-                    (strstr(def->get_cppdef(), "${body}") != 0))
+            if (GenerationSettings::cpp_get_default_defs() && (strstr(def->get_cppdef(), "${body}") != 0))
                 m.setWhatsThis(m.insertItem(TR("Edit C++ body"), 4),
                                TR("to edit the <i>operation</i> and its C++ body"));
 
-            if (GenerationSettings::java_get_default_defs() &&
-                    (strstr(def->get_javadef(), "${body}") != 0))
+            if (GenerationSettings::java_get_default_defs() &&  (strstr(def->get_javadef(), "${body}") != 0))
                 m.setWhatsThis(m.insertItem(TR("Edit Java body"), 5),
                                TR("to edit the <i>operation</i> and its Java body"));
 
-            if (GenerationSettings::php_get_default_defs() &&
-                    (strstr(def->get_phpdef(), "${body}") != 0))
+            if (GenerationSettings::php_get_default_defs() &&  (strstr(def->get_phpdef(), "${body}") != 0))
                 m.setWhatsThis(m.insertItem(TR("Edit Php body"), 6),
                                TR("to edit the <i>operation</i> and its Php body"));
 
-            if (GenerationSettings::python_get_default_defs() &&
-                    (strstr(def->get_pythondef(), "${body}") != 0))
+            if (GenerationSettings::python_get_default_defs() &&  (strstr(def->get_pythondef(), "${body}") != 0))
                 m.setWhatsThis(m.insertItem(TR("Edit Python body"), 7),
                                TR("to edit the <i>operation</i> and its Python body"));
 
