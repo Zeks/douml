@@ -54,6 +54,8 @@ public:
                         const WrapperStr & hdef, const WrapperStr & srcdef,
                         WrapperStr & h_incl,  WrapperStr & decl, WrapperStr & src_incl,
                         UmlArtifact * who);
+    QString getName(){return type.toString();}
+    void setIncluded(bool value){included = value;}
 
 protected:
     UmlTypeSpec type;

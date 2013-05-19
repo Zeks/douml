@@ -634,13 +634,21 @@ const char * UmlOperation::generate_body(QTextStream & fs,
     bool add_nl = FALSE;
     bool no_indent;
     char s_id[9];
-
-    if (preserve() && !isBodyGenerationForced()) {
+    WrapperStr forcedBody;
+    if (preserve() && !isBodyGenerationForced())
+    {
         unsigned id = get_id();
 
         sprintf(s_id, "%08X", id);
         if(bodies.contains((long) id))
             body = bodies[(long) id];
+        forcedBody = cppBody();
+        if(QString(body).contains(forcedBody))
+            forcedBody = QString();
+    }
+    else
+    {
+        forcedBody = cppBody();
     }
 
     if (body == 0)
@@ -665,6 +673,10 @@ const char * UmlOperation::generate_body(QTextStream & fs,
     const char* actualPrefix = compat ? BodyPrefix : BodyPrefix2;
     if (preserve() && !isBodyGenerationForced())
         fs << indent << actualPrefix << s_id << '\n';
+    if(!forcedBody.isEmpty())
+        fs << indent << forcedBody;
+
+
 
     if ((body != 0) && (*body != 0))
     {
@@ -983,14 +995,13 @@ static void read_bodies(const char * path, QHash<long, WrapperStr> & bodies)
 
     char * s = read_file(path);
 
-    if (s != 0) {
+    if (s != 0)
+    {
         char * p1 = s;
         char * p2;
 
         while ((p2 = CheckBodyPrefix(p1, BodyPrefix,BodyPrefix2)) != 0)
         {
-            //QLOG_INFO() << "Successfully found body pretfix: ";
-            //QLOG_INFO() << p2;
             p2 += BodyPrefixLength;
 
             char * body;
@@ -1057,15 +1068,7 @@ static void read_bodies(const char * path, QHash<long, WrapperStr> & bodies)
             *p2 = 0;
 
             int len = p2 - body + 1;
-            //char * b = new char[len];
-
-            //memcpy(b, body, len);
-            //QTextStream st(b);
-            //st.setCodec(QTextCodec::codecForLocale());
-            //QByteArray ba(body, len);
             WrapperStr str = QByteArray(body,len);
-            //const char * temp = body;
-            //st << toLocale(temp);
             bodies.insert(id, str);
             p1 += BodyPostfixLength + 8;
         }

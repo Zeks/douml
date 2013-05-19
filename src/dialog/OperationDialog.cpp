@@ -1342,7 +1342,7 @@ void OperationDialog::virtual_toggled(bool on)
 void OperationDialog::friend_toggled(bool on)
 {
     if (on) {
-        cbCppInline->setChecked(FALSE);
+        //cbCppInline->setChecked(FALSE);
         cbCppVirtual->setChecked(FALSE);
     }
 
@@ -1352,8 +1352,8 @@ void OperationDialog::friend_toggled(bool on)
 
 void OperationDialog::inline_toggled(bool on)
 {
-    if (on)
-        cbCppFriend->setChecked(FALSE);
+//    if (on)
+//        cbCppFriend->setChecked(FALSE);
 
     cpp_update_decl();
     cpp_update_def();

@@ -47,6 +47,9 @@
 #include <QMessageBox>
 #include <QSettings>
 
+
+
+
 BrowserNode* CreateDefaultConstructors(BrowserClass* originClass, BrowserClass* privateClass)
 {
     BrowserNode* constructor = originClass->addOperation();
@@ -449,7 +452,14 @@ void QtPrivateSplit::CreateLinkToPublic(BrowserClass *originClass, BrowserClass 
     originLinker->setText(0,"Q_DECLARE_PUBLIC");
     originLinker->modified();
 
+    BrowserNode* qPointer = privateClass->addAttribute();
+    AttributeData* qData = static_cast<AttributeData*>(qPointer->get_data());
+    qData->set_type(originClass->get_name() + "*");
+    qData->set_visibility(UmlPrivate);
 
+    qPointer->set_name("q_ptr");
+    qPointer->modified();
+    qPointer->setText(0,qPointer->get_name());
 //    BrowserNode* qObject = privateClass->add_extra_member();
 //    ExtraMemberData* qData = static_cast<ExtraMemberData*>(qObject->get_data());
 //    qData->set_cpp_decl("    Q_OBJECT\n");
@@ -475,7 +485,7 @@ void QtPrivateSplit::CreateLinkToPrivate(BrowserClass *originClass, BrowserClass
 
     BrowserNode* dPointer = originClass->addAttribute();
     AttributeData* dData = static_cast<AttributeData*>(dPointer->get_data());
-    dData->set_type(privateClass->get_name());
+    dData->set_type(privateClass->get_name() + "*");
     dData->set_visibility(UmlPrivate);
     dPointer->set_name("d_ptr");
     dPointer->modified();
@@ -488,6 +498,8 @@ void QtPrivateSplit::CreateLinkToPrivate(BrowserClass *originClass, BrowserClass
 //    originClass->move(privateLinker, qObject);
 }
 
+
+
 namespace QtPrivateSplit
 {
 void InsertPrivateLinkIntoConstructorDefinition(BrowserNode *constructor, BrowserNode *privateClass)
@@ -496,11 +508,13 @@ void InsertPrivateLinkIntoConstructorDefinition(BrowserNode *constructor, Browse
     OperationData* constructorData = static_cast<OperationData*>(asOperation->get_data());
     bool hasInitializerAsKey = asOperation->has_key("constructor-initializer") != -1;
     bool hasInitializerInDef = QString(constructorData->get_cppdef()).contains("constructor-initializer");
+    constructorData->new_body("q_ptr = this;",'c');
+
     if(!hasInitializerInDef)
     {
         QString cppDef = constructorData->get_cppdef();
         int pos = cppDef.find("${)}$");
-        cppDef.insert(pos+5, "@{constructor-initializer}");
+        cppDef.insert(pos+4, "@{constructor-initializer}");
         constructorData->set_cppdef(cppDef);
     }
     // need to check if constructor already have initializer

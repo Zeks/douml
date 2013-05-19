@@ -59,6 +59,7 @@ int main(int argc, char ** argv)
     QLOG_INFO() << " STARTING CPP_GENERATOR";
 #endif
     int port_index;
+    //QTest::qSleep(7000);
 
     if (argc == 2) {
         port_index = 1;

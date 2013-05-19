@@ -44,6 +44,7 @@
 #include "UmlSettings.h"
 #include "CppSettings.h"
 #include "UmlCom.h"
+#include <QSettings>
 #include "CppRefType.h"
 #include "util.h"
 #include "Logging/QsLog.h"
@@ -114,6 +115,23 @@ void UmlClass::compute_dependency(Q3PtrList<CppRefType> & dependencies,
                 it->compute_dependency(dependencies, stereotype, all_in_h);
         }
     }
+    int i = 0;
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "DoUML", "settings");
+    settings.setIniCodec(QTextCodec::codecForName("UTF-8"));
+    QString privatePart = settings.value("PIMPL/private_part").toString();
+
+    for(CppRefType* type : dependencies)
+    {
+        if(type->getName() == name().operator QString().replace(privatePart, ""))
+        {
+            type->setIncluded(true);
+            break;
+        }
+        i++;
+    }
+//    if(find != -1)
+//        dependencies.remove(find);
+
 
     if (an_enum && (!formals.isEmpty() || !actuals.isEmpty())) {
         write_trace_header();

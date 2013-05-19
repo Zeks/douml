@@ -259,9 +259,11 @@ bool UmlClassMember::compute_dependency(Q3PtrList<CppRefType> & dependencies,
 
         // search for a * or & or < after the typename
         bool incl = (template_level == 0);
-
+//        bool isPrivateClass = parent()->name().right(7) == "Private";
+//        bool q_ptr = ts.toString() == parent()->name().replace("Private", "");
         while ((c = *p) != 0) {
-            if ((c == '*') || (c == '&')) {
+            if ((c == '*') || (c == '&') /*&& !q_ptr*/)
+            {
                 incl = FALSE;
                 p += 1;
                 break;

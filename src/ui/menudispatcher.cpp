@@ -113,10 +113,13 @@ QMenu* AttributeMenu(BrowserNode* node, QList<QMenu*>& menuList)
             nodeMenu->addAction(TR("New set operation"), attr->nodeSlots.get(), SLOT(OnAddSetOperation()))->setParent(nodeMenu);
         if(requiresBothGetAndSetOperations)
             nodeMenu->addAction(TR("New get and set operation"), attr->nodeSlots.get(), SLOT(OnAddGetAndSetOperations()))->setParent(nodeMenu);
-        if(IsPrivateClass(node))
-            nodeMenu->addAction(TR("Move to public class"), attr->nodeSlots.get(), SLOT(OnMoveToPublicClass()))->setParent(nodeMenu);
-        else
-            nodeMenu->addAction(TR("Move to private class"), attr->nodeSlots.get(), SLOT(OnMoveToPrivateClass()))->setParent(nodeMenu);
+        if(GenerationSettings::cpp_get_default_defs())
+        {
+            if(IsPrivateClass(node))
+                nodeMenu->addAction(TR("Move to public class"), attr->nodeSlots.get(), SLOT(OnMoveToPublicClass()))->setParent(nodeMenu);
+            else
+                nodeMenu->addAction(TR("Move to private class"), attr->nodeSlots.get(), SLOT(OnMoveToPrivateClass()))->setParent(nodeMenu);
+        }
         if(editable)
             nodeMenu->addAction(TR("Duplicate"), attr->nodeSlots.get(), SLOT(OnDuplicate()))->setParent(nodeMenu);
         nodeMenu->addAction(TR("Referenced by"), attr->nodeSlots.get(), SLOT(OnShowReferencedBy()))->setParent(nodeMenu);
@@ -163,10 +166,13 @@ QMenu* OperationMenu(BrowserNode* node, QList<QMenu*>& menuList)
 
         nodeMenu->addAction(TR("Edit"), oper->nodeSlots.get(), SLOT(OnEdit()))->setParent(nodeMenu);
         nodeMenu->addAction(TR("Add constructor initializer"), operSlots, SLOT(OnEditConstructorInitializer()))->setParent(nodeMenu);
-        if(IsPrivateClass(node))
-            nodeMenu->addAction(TR("Move to public class"), oper->nodeSlots.get(), SLOT(OnMoveToPublicClass()))->setParent(nodeMenu);
-        else
-            nodeMenu->addAction(TR("Move to private class"), oper->nodeSlots.get(), SLOT(OnMoveToPrivateClass()))->setParent(nodeMenu);
+        if(GenerationSettings::cpp_get_default_defs())
+        {
+            if(IsPrivateClass(node))
+                nodeMenu->addAction(TR("Move to public class"), oper->nodeSlots.get(), SLOT(OnMoveToPublicClass()))->setParent(nodeMenu);
+            else
+                nodeMenu->addAction(TR("Move to private class"), oper->nodeSlots.get(), SLOT(OnMoveToPrivateClass()))->setParent(nodeMenu);
+        }
 
 
 
