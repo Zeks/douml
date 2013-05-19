@@ -66,7 +66,7 @@ BrowserDeploymentView::BrowserDeploymentView(QString s, BrowserNode * p, int id)
 }
 
 BrowserDeploymentView::BrowserDeploymentView(const BrowserDeploymentView * model,
-        BrowserNode * p)
+                                             BrowserNode * p)
     : BrowserNode(model->name, p), Labeled<BrowserDeploymentView>(all, 0)
 {
     def = new SimpleData(model->def);
@@ -120,7 +120,7 @@ void BrowserDeploymentView::make()
 BrowserDeploymentView * BrowserDeploymentView::add_deployment_view(BrowserNode * future_parent, QString name)
 {
     if (name.isEmpty() && future_parent->enter_child_name(name, TR("enter deployment view's name : "),
-                                        UmlDeploymentView, TRUE, FALSE))
+                                                          UmlDeploymentView, TRUE, FALSE))
         return 0;
 
     return new BrowserDeploymentView(name, future_parent);
@@ -219,7 +219,7 @@ void BrowserDeploymentView::menu()
                     m.insertSeparator();
                     m.setWhatsThis(m.insertItem(TR("Delete"), 6),
                                    TR("to delete the <i>deployment view</i> and its sub items. \
-Note that you can undelete them after"));
+                                      Note that you can undelete them after"));
                 }
             }
         }
@@ -290,9 +290,9 @@ Note that you can undelete them after"));
     else if (!is_read_only && (edition_number == 0)) {
         m.setWhatsThis(m.insertItem(TR("Undelete"), 7),
                        TR("undelete the <i>deployment view</i>. \
-Do not undelete its sub items"));
-        m.setWhatsThis(m.insertItem(TR("Undelete recursively"), 8),
-                       TR("undelete the <i>deployment view</i> and its sub items"));
+                          Do not undelete its sub items"));
+                          m.setWhatsThis(m.insertItem(TR("Undelete recursively"), 8),
+                                         TR("undelete the <i>deployment view</i> and its sub items"));
     }
 
     exec_menu_choice(m.exec(QCursor::pos()));
@@ -303,13 +303,13 @@ void BrowserDeploymentView::exec_menu_choice(int rank)
     switch (rank) {
     case 0: {
         BrowserDeploymentDiagram * d =
-            BrowserDeploymentDiagram::add_deployment_diagram(this);
+                BrowserDeploymentDiagram::add_deployment_diagram(this);
 
         if (d != 0)
             d->select_in_browser();
     }
-    break;
-    break;
+        break;
+        break;
 
     case 1: {
         BrowserDeploymentNode * dn = BrowserDeploymentNode::add_deploymentnode(this);
@@ -317,7 +317,7 @@ void BrowserDeploymentView::exec_menu_choice(int rank)
         if (dn != 0)
             dn->select_in_browser();
     }
-    break;
+        break;
 
     case 2: {
         BrowserArtifact * dn = BrowserArtifact::add_artifact(this);
@@ -325,7 +325,7 @@ void BrowserDeploymentView::exec_menu_choice(int rank)
         if (dn != 0)
             dn->select_in_browser();
     }
-    break;
+        break;
 
     case 3:
         edit(TR("Deployment view"), its_default_stereotypes);
@@ -384,44 +384,44 @@ void BrowserDeploymentView::exec_menu_choice(int rank)
 
         ToolCom::run((verbose_generation())
                      ? ((preserve) ? "cpp_generator -v -p" : "cpp_generator -v")
-                         : ((preserve) ? "cpp_generator -p" : "cpp_generator"),
-                         this);
+                     : ((preserve) ? "cpp_generator -p" : "cpp_generator"),
+                     this);
     }
 
-    return;
+        return;
 
     case 11: {
         bool preserve = preserve_bodies();
 
         ToolCom::run((verbose_generation())
                      ? ((preserve) ? "java_generator -v -p" : "java_generator -v")
-                         : ((preserve) ? "java_generator -p" : "java_generator"),
-                         this);
+                     : ((preserve) ? "java_generator -p" : "java_generator"),
+                     this);
     }
 
-    return;
+        return;
 
     case 12: {
         bool preserve = preserve_bodies();
 
         ToolCom::run((verbose_generation())
                      ? ((preserve) ? "php_generator -v -p" : "php_generator -v")
-                         : ((preserve) ? "php_generator -p" : "php_generator"),
-                         this);
+                     : ((preserve) ? "php_generator -p" : "php_generator"),
+                     this);
     }
 
-    return;
+        return;
 
     case 14: {
         bool preserve = preserve_bodies();
 
         ToolCom::run((verbose_generation())
                      ? ((preserve) ? "python_generator -v -p" : "python_generator -v")
-                         : ((preserve) ? "python_generator -p" : "python_generator"),
-                         this);
+                     : ((preserve) ? "python_generator -p" : "python_generator"),
+                     this);
     }
 
-    return;
+        return;
 
     case 13:
         ToolCom::run((verbose_generation()) ? "idl_generator -v" : "idl_generator", this);
@@ -606,8 +606,8 @@ UmlColor BrowserDeploymentView::get_color(UmlCode who) const
     }
 
     return (c != UmlDefaultColor)
-           ? c
-           : ((BrowserNode *) parent())->get_color(who);
+            ? c
+            : ((BrowserNode *) parent())->get_color(who);
 }
 
 BrowserNodeList & BrowserDeploymentView::instances(BrowserNodeList & result)
@@ -683,8 +683,8 @@ bool BrowserDeploymentView::tool_cmd(ToolCom * com, const char * args)
 void BrowserDeploymentView::DragMoveEvent(QDragMoveEvent * e)
 {
     if (UmlDrag::canDecode(e, UmlArtifact) ||
-        UmlDrag::canDecode(e, UmlDeploymentNode) ||
-        UmlDrag::canDecode(e, UmlDeploymentDiagram)) {
+            UmlDrag::canDecode(e, UmlDeploymentNode) ||
+            UmlDrag::canDecode(e, UmlDeploymentDiagram)) {
         if (!is_read_only)
             e->accept();
         else
@@ -697,16 +697,16 @@ void BrowserDeploymentView::DragMoveEvent(QDragMoveEvent * e)
 void BrowserDeploymentView::DragMoveInsideEvent(QDragMoveEvent * e)
 {
     if (!is_read_only &&
-        (UmlDrag::canDecode(e, UmlArtifact) ||
-         UmlDrag::canDecode(e, UmlDeploymentNode) ||
-         UmlDrag::canDecode(e, UmlDeploymentDiagram)))
+            (UmlDrag::canDecode(e, UmlArtifact) ||
+             UmlDrag::canDecode(e, UmlDeploymentNode) ||
+             UmlDrag::canDecode(e, UmlDeploymentDiagram)))
         e->accept();
     else
         e->ignore();
 }
 
 bool BrowserDeploymentView::may_contains_them(const Q3PtrList<BrowserNode> & l,
-        BooL & duplicable) const
+                                              BooL & duplicable) const
 {
     Q3PtrListIterator<BrowserNode> it(l);
 
@@ -745,7 +745,7 @@ void BrowserDeploymentView::DropAfterEvent(QDropEvent * e, BrowserNode * after)
     if ((((bn = UmlDrag::decode(e, UmlArtifact)) != 0) ||
          ((bn = UmlDrag::decode(e, UmlDeploymentNode)) != 0) ||
          (((bn = UmlDrag::decode(e, UmlDeploymentDiagram)) != 0))) &&
-        (bn != after) && (bn != this)) {
+            (bn != after) && (bn != this)) {
         if (may_contains(bn, FALSE)) {
             BrowserNode * old_parent = (BrowserNode *) bn->parent();
 
@@ -856,24 +856,24 @@ void BrowserDeploymentView::save(QTextStream & st, bool ref, QString & warning)
 BrowserDeploymentView * BrowserDeploymentView::read_ref(char *& st, const char * k)
 {
     if (strcmp(k, "deploymentview_ref") &&
-        ((read_file_format() >= 20) || strcmp(k, "componentview_ref")))
+            ((read_file_format() >= 20) || strcmp(k, "componentview_ref")))
         wrong_keyword(k, "deploymentview_ref");
 
     int id = read_id(st);
     BrowserDeploymentView * result = all[id];
 
     return (result == 0)
-           ? new BrowserDeploymentView(id)
-           : result;
+            ? new BrowserDeploymentView(id)
+            : result;
 }
 
 BrowserDeploymentView * BrowserDeploymentView::read(char *& st, char * k,
-        BrowserNode * parent,
-        bool /*recursive*/)
+                                                    BrowserNode * parent,
+                                                    bool /*recursive*/)
 {
     bool from_componentview =
-        // component -> artifact
-        (read_file_format() < 20) && !strcmp(k, "componentview");
+            // component -> artifact
+            (read_file_format() < 20) && !strcmp(k, "componentview");
 
     if (!strcmp(k, "deploymentview") || from_componentview) {
         int id = read_id(st);
@@ -898,7 +898,7 @@ BrowserDeploymentView * BrowserDeploymentView::read(char *& st, char * k,
         r->is_defined = TRUE;
 
         r->is_read_only = (!in_import() && read_only_file()) ||
-                          ((user_id() != 0) && r->is_api_base());
+                ((user_id() != 0) && r->is_api_base());
 
         k = read_keyword(st);
 
@@ -940,8 +940,22 @@ BrowserNode * BrowserDeploymentView::get_it(const char * k, int id)
     BrowserNode * r;
 
     if (((r = BrowserDeploymentDiagram::get_it(k, id)) == 0) &&
-        ((r = BrowserDeploymentNode::get_it(k, id)) == 0))
+            ((r = BrowserDeploymentNode::get_it(k, id)) == 0))
         r = BrowserArtifact::get_it(k, id);
 
     return r;
+}
+
+
+QList<BrowserNode *> GetArtifactNodes(BrowserDeploymentView *view, QString name)
+{
+    QList<BrowserNode *> result;
+    for (BrowserNode * child =static_cast<BrowserNode*>( view->firstChild()); child != 0; child = static_cast<BrowserNode*>(child->nextSibling()))
+    {
+        if(child->get_type() != UmlArtifact)
+            continue;
+        if(name.isEmpty() || child->get_name() == name)
+            result << child;
+    }
+    return result;
 }

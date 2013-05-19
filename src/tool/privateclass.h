@@ -65,6 +65,7 @@ BrowserArtifact* CreateArtifact(BrowserClass* cl, QString deploymentName);
 BrowserArtifact* CreateDeploymentArtifact(BrowserClass* cl, BrowserDeploymentView* deploymentView);
 BrowserNode* CreateDeploymentView(BrowserClass* cl, QString deploymentName = QString(""));
 BrowserDeploymentView* GetDeploymentViewForClass(BrowserClass* node, QString deploymentViewName = QString(""));
+//BrowserArtifact* GetArtifactForClass(BrowserClass* node, BrowserDeploymentView* view);
 bool RequestNewPrivateClass();
 bool FindPrivate(BrowserClass* originClass, BrowserClass*& privateClass, bool askForNewClass);
 bool FindPublic(BrowserClass* originClass, BrowserClass*& publicClass);

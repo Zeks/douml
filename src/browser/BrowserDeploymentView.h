@@ -110,5 +110,6 @@ public:
     virtual void renumber(int phase);
     virtual void prepare_update_lib() const;
 };
+QList<BrowserNode *> GetArtifactNodes(BrowserDeploymentView* package, QString name);
 
 #endif

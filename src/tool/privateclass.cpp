@@ -214,7 +214,7 @@ BrowserDeploymentView* GetDeploymentViewForClass(BrowserClass *node, QString dep
     if(node->get_associated_artifact())
         return static_cast<BrowserDeploymentView*>(node->get_associated_artifact()->parent());
 
-    if(!node->parent() || node->parent()->parent())
+    if(!node->parent() || !node->parent()->parent())
         return nullptr;
     //first, we try to find deployment view with the same name (if it is not forced)
     BrowserPackage* package = static_cast<BrowserPackage*>(node->parent()->parent());
@@ -239,7 +239,7 @@ BrowserArtifact* CreateArtifact(BrowserClass* node, QString deploymentName)
     if(!node)
         return nullptr;
     if(node->get_associated_artifact() != nullptr)
-        return nullptr;
+        return node->get_associated_artifact();
 
     BrowserDeploymentView* deploymentView = nullptr;
 
@@ -249,7 +249,13 @@ BrowserArtifact* CreateArtifact(BrowserClass* node, QString deploymentName)
         deploymentView = static_cast<BrowserDeploymentView*>(CreateDeploymentView(node, deploymentName));
     BrowserArtifact * artifact = nullptr;
     if(deploymentView)
-        artifact = BrowserArtifact::add_artifact(deploymentView, node->get_name());
+    {
+        auto artifacts = GetArtifactNodes(deploymentView, node->get_name());
+        if(artifacts.size() > 0)
+           artifact = static_cast<BrowserArtifact*>(artifacts.at(0));
+        if(!artifact)
+            artifact = BrowserArtifact::add_artifact(deploymentView, node->get_name());
+    }
 
     artifact->get_data()->set_stereotype("source");
     Q3ValueList<BrowserClass *> associatedClasses;
@@ -309,7 +315,7 @@ bool PrivateClassMovePlugin::FindPrivate(BrowserClass* originClass, BrowserClass
     IdIterator<BrowserClass> it(BrowserClass::all);
     while(it.current() != 0)
     {
-        if(privateName == it.current()->get_name())
+        if(privateName == it.current()->get_name() && !it.current()->deletedp())
             break;
         ++it;
     }

@@ -693,7 +693,7 @@ void QuickEdit::AssignItemsForClass(QSharedPointer<TreeItemInterface> root,  Bro
 
     QSharedPointer<TreeItemInterface > interfaceItem = CreateInterfaceNode(root, classController, classNode);
 
-    QList<BrowserNode*> children = classNode->children(validTypes);
+    QList<BrowserNode*> children = classNode->children(validTypes, true);
     std::reverse(children.begin(), children.end());
     QList<TreeItemInterface> items;
     for(BrowserNode* child : children)
