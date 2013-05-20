@@ -254,7 +254,7 @@ BrowserArtifact* CreateArtifact(BrowserClass* node, QString deploymentName)
     {
         auto artifacts = GetArtifactNodes(deploymentView, node->get_name());
         if(artifacts.size() > 0)
-           artifact = static_cast<BrowserArtifact*>(artifacts.at(0));
+            artifact = static_cast<BrowserArtifact*>(artifacts.at(0));
         if(!artifact)
             artifact = BrowserArtifact::add_artifact(deploymentView, node->get_name());
     }
@@ -329,7 +329,7 @@ bool PrivateClassMovePlugin::FindPrivate(BrowserClass* originClass, BrowserClass
         BrowserArtifact* artifact = nullptr;
         artifact = CreateArtifact(privateClass, "PrivateClasses");
         if(setupPrivateArtifact)
-           setupPrivateArtifact(privateClass->get_name(), artifact);
+            setupPrivateArtifact(privateClass->get_name(), artifact);
     }
     if(privateClass == nullptr)
         return false;
@@ -468,22 +468,26 @@ void QtPrivateSplit::CreateLinkToPublic(BrowserClass *originClass, BrowserClass 
     qPointer->set_name("q_ptr");
     qPointer->modified();
     qPointer->setText(0,qPointer->get_name());
-//    BrowserNode* qObject = privateClass->add_extra_member();
-//    ExtraMemberData* qData = static_cast<ExtraMemberData*>(qObject->get_data());
-//    qData->set_cpp_decl("    Q_OBJECT\n");
-//    qObject->set_name("Q_OBJECT");
-//    qObject->setText(0,"Q_OBJECT");
-    //qObject->modified();
+
+    BrowserNode* objectNode;
+
+    BrowserNode* qObject = originClass->add_extra_member();
+    ExtraMemberData* qData = static_cast<ExtraMemberData*>(qObject->get_data());
+    qData->set_cpp_decl("    Q_OBJECT\n");
+    qObject->set_name("Q_OBJECT");
+    qObject->setText(0,"Q_OBJECT");
+    qObject->modified();
+    BrowserNode* start = static_cast<BrowserNode*>(originClass->firstChild());
+    originClass->move(qObject, start);
+    originClass->move(start, qObject);
+    objectNode = qObject;
 }
 
 
 void QtPrivateSplit::CreateLinkToPrivate(BrowserClass *originClass, BrowserClass *privateClass)
 {
-//    BrowserNode* qObject = originClass->add_extra_member();
-//    ExtraMemberData* qData = static_cast<ExtraMemberData*>(qObject->get_data());
-//    qData->set_cpp_decl("    Q_OBJECT\n");
-//    qObject->setText(0,"Q_OBJECT");
-//    qObject->modified();
+
+
 
     QList<BrowserNode*> attributeChildren = originClass->children(QList<UmlCode>() << UmlAttribute);
     QList<BrowserNode*> extraChildren = originClass->children(QList<UmlCode>() << UmlExtraMember);
@@ -497,20 +501,42 @@ void QtPrivateSplit::CreateLinkToPrivate(BrowserClass *originClass, BrowserClass
         BrowserAttribute* extra = static_cast<BrowserAttribute*>(node);
         return extra->get_name() == "d_ptr";
     };
+    auto isObjectLink = [](BrowserNode* node)
+    {
+        BrowserExtraMember* extra = static_cast<BrowserExtraMember*>(node);
+        return extra->get_name() == "Q_OBJECT";
+    };
+
+    BrowserNode* objectNode;
+    auto object = std::find_if(extraChildren.begin(),extraChildren.end(), isObjectLink) == extraChildren.end();
+    if(object == extraChildren.end())
+    {
+        BrowserNode* qObject = originClass->add_extra_member();
+        ExtraMemberData* qData = static_cast<ExtraMemberData*>(qObject->get_data());
+        qData->set_cpp_decl("    Q_OBJECT\n");
+        qObject->set_name("Q_OBJECT");
+        qObject->setText(0,"Q_OBJECT");
+        qObject->modified();
+        BrowserNode* start = static_cast<BrowserNode*>(originClass->firstChild());
+        originClass->move(qObject, start);
+        originClass->move(start, qObject);
+        objectNode = qObject;
+    }
+    else
+        objectNode = *it;
 
     if(std::find_if(extraChildren.begin(),extraChildren.end(), isPrivateLink) == extraChildren.end())
     {
         BrowserNode* privateLinker = originClass->add_extra_member();
         ExtraMemberData* privateLinkerData = static_cast<ExtraMemberData*>(privateLinker->get_data());
-        privateLinkerData->set_cpp_decl("    Q_DECLARE_PRIVATE(" + privateClass->get_name() + ")");
+        privateLinkerData->set_cpp_decl("    Q_DECLARE_PRIVATE(" + originClass->get_name() + ")");
         privateLinker->setText(0,"Q_DECLARE_PRIVATE");
         privateLinker->set_name("Q_DECLARE_PRIVATE");
         privateLinker->modified();
-        BrowserNode* start = static_cast<BrowserNode*>(originClass->firstChild());
-        originClass->move(privateLinker, start);
-        originClass->move(start, privateLinker);
-
+        originClass->move(privateLinker, qObject);
     }
+
+
 
     if(std::find_if(attributeChildren.begin(),attributeChildren.end(), isDPtr) == attributeChildren.end())
     {
@@ -552,14 +578,14 @@ void InsertPrivateLinkIntoConstructorDefinition(BrowserNode *constructor, Browse
     {
         asOperation->resize_n_keys(nKeys+1, true);
         asOperation->set_key(nKeys, "constructor-initializer");
-        newConstructorInit = ": d_ptr(new "+ privateClass->get_name() + "())";
+        newConstructorInit = ": QObject(parent), d_ptr(new "+ privateClass->get_name() + "())";
     }
     else
     {
         if(!skip)
         {
             nKeys--;
-            newConstructorInit = QString(asOperation->get_value("constructor-initializer")) + ", d_ptr(new " + privateClass->get_name() + "())";
+            newConstructorInit = QString(asOperation->get_value("constructor-initializer")) + ", QObject(parent), d_ptr(new " + privateClass->get_name() + "())";
         }
     }
     nKeys = static_cast<BrowserNode*>(asOperation->parent())->get_n_keys();
@@ -617,7 +643,16 @@ BrowserOperation* QtPrivateSplit::CreateQConstructor(BrowserClass *originClass, 
         asOperationData->set_param_dir(0, UmlInOut);
         OperationFuncs::recompute_param(asOperation, 0, false);
 
-        int nKeys = privateClass->get_n_keys();
+//        asOperationData->set_n_params(2);
+//        AType t;
+//        t.set_explicit_type("QObject");
+//        asOperationData->set_n_params(1);
+//        asOperationData->set_param_name(0, "parent");
+//        asOperationData->set_param_type(0, t);
+//        asOperationData->set_param_dir(0, UmlInOut);
+//        OperationFuncs::recompute_param(asOperation, 1, false);
+
+//        int nKeys = privateClass->get_n_keys();
 
 
         asOperation->resize_n_keys(nKeys+1, true);
