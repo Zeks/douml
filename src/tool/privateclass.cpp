@@ -472,8 +472,8 @@ void QtPrivateSplit::CreateLinkToPublic(BrowserClass *originClass, BrowserClass 
     BrowserNode* objectNode;
 
     BrowserNode* qObject = originClass->add_extra_member();
-    ExtraMemberData* qData = static_cast<ExtraMemberData*>(qObject->get_data());
-    qData->set_cpp_decl("    Q_OBJECT\n");
+    ExtraMemberData* qobjData = static_cast<ExtraMemberData*>(qObject->get_data());
+    qobjData->set_cpp_decl("    Q_OBJECT\n");
     qObject->set_name("Q_OBJECT");
     qObject->setText(0,"Q_OBJECT");
     qObject->modified();
@@ -508,7 +508,7 @@ void QtPrivateSplit::CreateLinkToPrivate(BrowserClass *originClass, BrowserClass
     };
 
     BrowserNode* objectNode;
-    auto object = std::find_if(extraChildren.begin(),extraChildren.end(), isObjectLink) == extraChildren.end();
+    auto object = std::find_if(extraChildren.begin(),extraChildren.end(), isObjectLink);
     if(object == extraChildren.end())
     {
         BrowserNode* qObject = originClass->add_extra_member();
@@ -523,7 +523,7 @@ void QtPrivateSplit::CreateLinkToPrivate(BrowserClass *originClass, BrowserClass
         objectNode = qObject;
     }
     else
-        objectNode = *it;
+        objectNode = *object;
 
     if(std::find_if(extraChildren.begin(),extraChildren.end(), isPrivateLink) == extraChildren.end())
     {
@@ -533,7 +533,7 @@ void QtPrivateSplit::CreateLinkToPrivate(BrowserClass *originClass, BrowserClass
         privateLinker->setText(0,"Q_DECLARE_PRIVATE");
         privateLinker->set_name("Q_DECLARE_PRIVATE");
         privateLinker->modified();
-        originClass->move(privateLinker, qObject);
+        originClass->move(privateLinker, objectNode);
     }
 
 
@@ -652,9 +652,7 @@ BrowserOperation* QtPrivateSplit::CreateQConstructor(BrowserClass *originClass, 
 //        asOperationData->set_param_dir(0, UmlInOut);
 //        OperationFuncs::recompute_param(asOperation, 1, false);
 
-//        int nKeys = privateClass->get_n_keys();
-
-
+        int nKeys = privateClass->get_n_keys();
         asOperation->resize_n_keys(nKeys+1, true);
         asOperation->set_key(nKeys, "constructor-initializer");
         QString newConstructorInit;
