@@ -60,10 +60,6 @@ void BrowserOperationAttribute::set_param_type(QString value)
     BrowserClass::instances(nodes);
     nodes.full_names(list);
 
-//    oper->set_param_dir(index, (UmlParamDirection) DirList.findIndex(text(index, 0)));
-
-//    oper->set_param_name(index, text(index, 1).stripWhiteSpace());
-
     AType t;
     if (!value.isEmpty())
     {

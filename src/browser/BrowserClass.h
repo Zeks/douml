@@ -84,7 +84,10 @@ public:
     BrowserNode * add_relation(BrowserRelation * rel);
     BrowserNode * add_operation(BrowserOperation * oper = 0, bool sameName = false);
     BrowserNode * duplicate_operation(BrowserOperation * oper = 0);
-    BrowserNode * addOperation(BrowserOperation * oper = nullptr);
+    BrowserNode * addOperation(QString name = QString{});
+    void AddForcedGettersForAttributes(const BrowserNodeList& attributes);
+    void AddForcedSettersForAttributes(const BrowserNodeList &attributes);
+    void AddForcedGettersSettersForAttributes(const BrowserNodeList &attributes);
     BrowserNode * add_inherited_operation(BrowserOperation * model);
     BrowserNode * add_extra_member(BrowserExtraMember * em = 0);
     QList<BrowserOperation *> inherited_operations(unsigned limit, QString parent_name = QString()) const;
@@ -112,7 +115,8 @@ public:
 
 
     void get_attrs(BrowserNodeList &);
-    void get_rels(BrowserClass *, QList<RelationData *> &, int * rev = 0) const;
+    BrowserNodeList get_all_child_attributes();
+    void get_rels(BrowserClass * target, QList<RelationData *> &, int * rev = 0) const;
     void get_rels(BrowserClass * target, QList<BrowserRelation *> & l) const;
     void get_tree(BrowserNodeList &);
     virtual BrowserNode * get_associated() const;

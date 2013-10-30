@@ -53,6 +53,7 @@
 #include "BrowserRelation.h"
 #include "BrowserSimpleRelation.h"
 #include "BrowserArtifact.h"
+#include "browserfunctions/operationfuncs.h"
 #include "BrowserComponent.h"
 #include "ArtifactData.h"
 #include "AttributeData.h"
@@ -527,11 +528,78 @@ static const int generate_java_index = 11;
 static const int roundtrip_java_index = 32;
 static const int generate_php_index = 22;
 static const int generate_python_index = 25;
+static const int addForcedGetters = 26;
+static const int addForcedSetters = 27;
+static const int addForcedGettersSetters = 28;
 static const int generate_idl_index = 12;
 static const int first_inherited_function_index = 10000;
 static const int too_much_inherited_functions_index = 9999;
 static const int sensible_amount_of_visible_entries = 25;
 
+BrowserNodeList BrowserClass::get_all_child_attributes()
+{
+    BrowserNodeList result;
+    for (auto child = this->firstChild(); child; child = child->nextSibling())
+    {
+        if (!((BrowserNode *) child)->deletedp() &&
+                (((BrowserNode *) child)->get_type() == UmlAttribute))
+            result.append((BrowserNode *) child);
+    }
+    return result;
+}
+
+void BrowserClass::AddForcedGettersForAttributes(const BrowserNodeList &attributes)
+{
+    for(BrowserNode* node : static_cast<QList<BrowserNode*>>(attributes))
+    {
+        node = static_cast<BrowserAttribute*>(node);
+        QString nodeName = node->get_name();
+        QString type = static_cast<AttributeData*>(node->get_data())->get_type().get_type();
+        BrowserOperation* oper = static_cast<BrowserOperation*>(this->addOperation("Get" + nodeName.mid(0, 1).toUpper() + nodeName.right(nodeName.length()-1)));
+        static_cast<OperationData*>(oper->get_data())->set_return_type(type);
+    }
+}
+void BrowserClass::AddForcedSettersForAttributes(const BrowserNodeList &attributes)
+{
+    for(BrowserNode* node : static_cast<QList<BrowserNode*>>(attributes))
+    {
+        node = static_cast<BrowserAttribute*>(node);
+        QString nodeName = node->get_name();
+        QString type = static_cast<AttributeData*>(node->get_data())->get_type().get_type();
+        BrowserOperation* oper = static_cast<BrowserOperation*>(this->addOperation("Set" + nodeName.mid(0, 1).toUpper() + nodeName.right(nodeName.length()-1)));
+        OperationData* currentData = static_cast<OperationData*>(oper->get_data());
+        currentData->set_return_type("void");
+        currentData->set_n_params(currentData->get_n_params() + 1);
+        currentData->set_param_name(currentData->get_n_params() - 1, "value");
+
+        QStringList list;
+        BrowserNodeList nodes;
+        BrowserClass::instances(nodes);
+        nodes.full_names(list);
+
+        AType t;
+        if (!type.isEmpty())
+        {
+            int rank = list.findIndex(type);
+
+            if (rank != -1)
+                t.type = (BrowserClass *) nodes.at(rank);
+            else
+                t.explicit_type = type;
+        }
+        currentData->set_param_type(currentData->get_n_params() - 1,t);
+        currentData->set_param_dir(currentData->get_n_params() - 1,UmlIn);
+        oper->package_modified();
+        oper->get_data()->modified();
+        oper->modified();
+        OperationFuncs::recompute_param(oper, currentData->get_n_params() - 1, true);
+    }
+}
+void BrowserClass::AddForcedGettersSettersForAttributes(const BrowserNodeList &attributes)
+{
+    AddForcedGettersForAttributes(attributes);
+    AddForcedSettersForAttributes(attributes);
+}
 
 void BrowserClass::InstallParentsMenuItems(Q3PopupMenu& inhopersubm)
 {
@@ -677,6 +745,17 @@ void BrowserClass::menu()
                     }
                 }
             }
+            m.insertSeparator();
+            m.setWhatsThis(m.insertItem(TR("Add all getters"), addForcedGetters),
+                           TR("Generate getters for all member attributes"));
+            m.setWhatsThis(m.insertItem(TR("Add all setters"), addForcedSetters),
+                           TR("Generate setters for all member attributes"));
+            m.setWhatsThis(m.insertItem(TR("Add all getters/setters"), addForcedSetters),
+                           TR("Generate getters/setters for all member attributes"));
+
+
+
+
         }
         else
         {
@@ -1104,6 +1183,22 @@ void BrowserClass::exec_menu_choice(int rank,
         rank = dialog.choosen() + 10000;
     }
 
+    case addForcedGetters:
+    {
+        AddForcedGettersForAttributes(get_all_child_attributes());
+        break;
+    }
+    case addForcedSetters:
+    {
+        AddForcedSettersForAttributes(get_all_child_attributes());
+        break;
+    }
+    case addForcedGettersSetters:
+    {
+        AddForcedGettersSettersForAttributes(get_all_child_attributes());
+        break;
+    }
+
         // no break
     default:
         if (rank >= select_component_index)
@@ -1442,19 +1537,15 @@ BrowserNode *BrowserClass::duplicate_operation(BrowserOperation *oper)
     return add_operation(oper, true);
 }
 
-BrowserNode *BrowserClass::addOperation(BrowserOperation *oper)
+BrowserNode *BrowserClass::addOperation(QString name)
 {
-
-    QString name;
-    oper = BrowserOperation::new_one(name, this);
-
+    BrowserOperation * oper = BrowserOperation::new_one(name, this);
 
     setOpen(TRUE);
     def->modified();
     package_modified();
     oper->set_name(name);
     oper->select_in_browser();
-
     return oper;
 }
 
@@ -1895,7 +1986,8 @@ void BrowserClass::get_rels(BrowserClass * target,
     lb.append(target);
     get_assocs(la, lb, l);
 
-    if (rev != 0) {
+    if (rev != 0)
+    {
         *rev = l.count();
         QList<RelationData *> ll;
 

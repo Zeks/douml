@@ -86,10 +86,10 @@ protected:
     bool cpp_friend : 1;		// C++
     bool cpp_virtual : 1;		// C++
     bool cpp_inline : 1;		// C++
-    bool cpp_default : 1;		// C++
-    bool cpp_delete : 1;		// C++
-    bool cpp_override : 1;		// C++
-    bool cpp_final : 1;		// C++
+    bool cpp_default = false;		// C++
+    bool cpp_delete = false;		// C++
+    bool cpp_override  = false;		// C++
+    bool cpp_final  = false;		// C++
     bool cpp_get_set_frozen : 1;	// C++
     bool cpp_indent_body : 1;		// C++
     bool java_final : 1;		// Java
